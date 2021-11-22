@@ -1,0 +1,81 @@
+<#include "managerules_tabs.html" />
+<@tabs2 tab="rule" />
+
+<@box>
+	<@boxHeader title='#i18n{myluteceaccessrules.modify_rule.title}' />
+	<@boxBody>
+    <@tform class="form-horizontal" method="post" name="modify_rule" action="jsp/admin/plugins/myluteceaccessrules/ManageRules.jsp">
+		    <@messages errors=errors />
+        <input type="hidden" id="id" name="id" value="${rule.id!''}"/>
+        <input type="hidden" value="${token}" name="token" />
+
+		
+        
+		<@formGroup labelFor='title' labelKey='#i18n{myluteceaccessrules.modify_rule.labelTitle}'helpKey='#i18n{myluteceaccessrules.modify_rule.labelTitle.help}' mandatory=true>
+          	<@input type='text' id='title' name='title'  maxlength=50 value='${rule.title!\'\'}' tabIndex='0' />
+		</@formGroup>
+		<@formGroup labelFor='description' labelKey='#i18n{myluteceaccessrules.modify_rule.labelDescription}' helpKey='#i18n{myluteceaccessrules.modify_rule.labelDescription.help}' mandatory=true>
+          	<@input type='text' id='description' name='description'  maxlength=255 value='${rule.description!\'\'}' tabIndex='1' />
+		</@formGroup>
+		<@formGroup labelFor='enable' labelKey='#i18n{myluteceaccessrules.modify_rule.labelEnable}' helpKey='#i18n{myluteceaccessrules.modify_rule.labelEnable.help}'>
+			<@checkBox id="enable"  orientation='switch'  name="enable"  value="1" checked=rule.enable!'false' tabIndex='2' />
+		</@formGroup>
+		<@formGroup labelFor='external' orientation='inline' labelKey='#i18n{myluteceaccessrules.modify_rule.labelExternal}' helpKey='#i18n{myluteceaccessrules.modify_rule.labelExternal.help}'>
+			<@checkBox id="external"  orientation='switch'   name="external"  value="1" checked=rule.external!'false' tabIndex='3'  params='data-toggle="collapse" data-target=".messagetodisplayGroup "'/>
+		</@formGroup>
+		<@formGroup  class="messagetodisplayGroup collapse  ${rule.external?then('','show')}" id="messagetodisplayGroup" labelFor='messagetodisplay' labelKey='#i18n{myluteceaccessrules.modify_rule.labelMessagetodisplay}' helpKey='#i18n{myluteceaccessrules.modify_rule.labelMessagetodisplay.help}'  mandatory=false >
+          	<@input type='textarea' id='messagetodisplay' name='messagetodisplay'  value='${rule.messagetodisplay!\'\'}' tabIndex='4' />
+		</@formGroup>
+		<@formGroup id="redirectUrlGroup" class="messagetodisplayGroup collapse  ${rule.external?then('show','')}" labelFor='redirecturl' labelKey='#i18n{myluteceaccessrules.modify_rule.labelRedirecturl}' helpKey='#i18n{myluteceaccessrules.modify_rule.labelRedirecturl.help}' mandatory=false>
+          	<@input type='text' id='redirecturl' name='redirecturl'  maxlength=255 value='${rule.redirecturl!\'\'}' tabIndex='5' />
+		</@formGroup>
+	    <@formGroup id="backUrlGroup" class="messagetodisplayGroup collapse  ${rule.external?then('show','')}" labelFor='backUrl' labelKey='#i18n{myluteceaccessrules.modify_rule.labelBackUrl}' helpKey='#i18n{myluteceaccessrules.modify_rule.labelBackUrl.help}' mandatory=false>
+          	<@input type='text' id='backUrl' name='backUrl'  maxlength=255 value='${rule.backUrl!\'\'}' tabIndex='5' />
+		</@formGroup>
+	
+
+		
+		<@formGroup labelFor='roles_list' labelKey='#i18n{myluteceaccessrules.modify_rule.labelRoles}' >
+			<#list roles_list as role>
+			       <@checkBox id="role_${role.code}"  orientation='inline' name="role_${role.code}"  value="role_${role.code}"  tabIndex='3' checked=role.checked >${role.name}</@checkBox>
+	        </#list>   
+		</@formGroup>
+		
+		
+		
+		<@alert color='Info' >#i18n{myluteceaccessrules.modify_rule.alertProtectedUrls}</@alert>
+		<@formGroup labelFor='protectedUrls' labelKey='#i18n{myluteceaccessrules.modify_rule.labelProtectedUrls}' >
+          	
+          	<#if rule.protectedUrls?has_content>
+       	   		<#list rule.protectedUrls as protectedUrl>
+          			<@input type='text'  name='${protectedUrl.code}'  maxlength=255 value='${protectedUrl.name}' tabIndex='5' />
+					<@aButton href='jsp/admin/plugins/myluteceaccessrules/ManageRules.jsp?protected_url_delete=${protectedUrl.code}&action=removeProtectedUrlModify' title='#i18n{myluteceaccessrules.modify_rule.buttonRemoveProtectedUrl}' buttonIcon='trash' color='danger'/>
+				
+				</#list>
+				    
+			</#if>
+			 <@input type='text'  name='protected_url'  maxlength=255 value='' tabIndex='5' />
+			<@button type='submit' name='action_addProtectedUrlModify' title='#i18n{myluteceaccessrules.modify_rule.buttonAddProtectedUrl}' buttonIcon='check' />
+						
+		</@formGroup>
+		
+		<@alert color='Info' >#i18n{myluteceaccessrules.modify_rule.alertPublicUrls}</@alert>
+		<@formGroup labelFor='publicUrls' labelKey='#i18n{myluteceaccessrules.modify_rule.labelPublicUrls}' >
+          	
+          	<#if rule.publicUrls?has_content>
+       	   		<#list rule.publicUrls as publicUrl>
+          			<@input type='text'  name='${publicUrl.code}'  maxlength=255 value='${publicUrl.name}' tabIndex='5' />
+					<@aButton href='jsp/admin/plugins/myluteceaccessrules/ManageRules.jsp?public_url_delete=${publicUrl.code}&action=removePublicUrlModify' title='#i18n{myluteceaccessrules.modify_rule.buttonRemovePublicUrl}' buttonIcon='trash' color='danger'/>
+				
+				</#list>
+				    
+			</#if>
+			 <@input type='text'  name='public_url'  maxlength=255 value='' tabIndex='5' />
+			<@button type='submit' name='action_addPublicUrlModify' title='#i18n{myluteceaccessrules.modify_rule.buttonAddPublicUrl}' buttonIcon='check' />
+						
+		</@formGroup>
+		
+        <@actionButtons button1Name="action_modifyRule" button2Name="view_manageRule"/>
+    </@tform>
+	</@boxBody>
+</@box>
