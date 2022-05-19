@@ -95,7 +95,7 @@ public class AccessRulesFilter implements Filter
         {
            
         	Rule rule=AccessRulesService.getInstance().geFirstRuleTriggered(req);
-        	
+        	SecurityService.getInstance().registerUser(req, null);
         	if(rule.isExternal() && StringUtils.isNotEmpty(rule.getRedirecturl()))
         		
         	{

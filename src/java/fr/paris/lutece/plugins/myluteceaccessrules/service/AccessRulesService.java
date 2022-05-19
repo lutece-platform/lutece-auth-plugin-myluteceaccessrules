@@ -36,6 +36,7 @@ package fr.paris.lutece.plugins.myluteceaccessrules.service;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,6 +44,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 
+import fr.paris.lutece.plugins.mylutece.service.MyLuteceUserService;
+import fr.paris.lutece.plugins.mylutece.service.MyluteceExternalRoleService;
 import fr.paris.lutece.plugins.myluteceaccessrules.business.Rule;
 import fr.paris.lutece.plugins.myluteceaccessrules.business.RuleHome;
 import fr.paris.lutece.portal.service.security.SecurityService;
