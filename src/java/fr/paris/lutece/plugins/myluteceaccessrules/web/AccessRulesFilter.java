@@ -95,7 +95,8 @@ public class AccessRulesFilter implements Filter
         {
            
         	Rule rule=AccessRulesService.getInstance().geFirstRuleTriggered(req);
-        	SecurityService.getInstance().registerUser(req, null);
+        	//Logout User if the rule is not verified
+        	SecurityService.getInstance().logoutUser(req);
         	if(rule.isExternal() && StringUtils.isNotEmpty(rule.getRedirecturl()))
         		
         	{

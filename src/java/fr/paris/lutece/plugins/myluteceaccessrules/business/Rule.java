@@ -69,6 +69,10 @@ public class Rule implements Serializable
     @Nullable
     private boolean _bExternal;
     
+    @Nullable
+    private boolean _bLogoutUser;
+    
+    
     private String _strMessagetodisplay;
     
     @Size( max = 255 , message = "#i18n{myluteceaccessrules.validation.rule.Redirecturl.size}" ) 
@@ -249,4 +253,22 @@ public class Rule implements Serializable
 	public void setBackUrl(String _strBackUrlParameter) {
 		this._strBackUrl = _strBackUrlParameter;
 	}
+	
+	/**
+     * Sets  Logout User
+     * @param bLogoutUser logout user
+     */ 
+    public void setLogoutUser( boolean bLogoutUser )
+    {
+    	_bLogoutUser = bLogoutUser;
+    }
+    
+    /**
+     * Returns the true if the user muset be logout
+     * @return true if the user muset be logout
+     */
+    public boolean isLogoutUser( )
+    {
+        return _bLogoutUser;
+    }
 }

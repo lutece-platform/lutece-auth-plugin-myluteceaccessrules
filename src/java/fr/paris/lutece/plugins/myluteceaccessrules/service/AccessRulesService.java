@@ -37,10 +37,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -338,7 +340,16 @@ public final class AccessRulesService
     		String strBackUrl=rule.getBackUrl();
     		if(strBackUrl.contains(MARKER_BASE_URL))
     		{	
-    			String strBaseUrl= AppPathService.getBaseUrl(request);
+    			
+    			String strBaseUrl="";
+				try {
+					strBaseUrl = AppPathService.getAbsoluteUrl(request, getServiceBackUrl(request));
+				} catch (UnsupportedEncodingException e) {
+					
+					AppLogService.error(e);
+					//get base Url
+					AppPathService.getBaseUrl(request);
+				}
     			if(strBaseUrl.endsWith("/") && strBackUrl.startsWith("/"))
     			{
     				strBackUrl=strBackUrl.substring(1);
@@ -366,6 +377,34 @@ public final class AccessRulesService
     
     }
     
+    
+    private String getServiceBackUrl( HttpServletRequest request) throws UnsupportedEncodingException
+    {
+    	
+    	
+            String strNextUrl = request.getServletPath();
+           
+             
+            UrlItem url = new UrlItem( strNextUrl );
+            Enumeration<String> enumParams = request.getParameterNames( );
+
+            while ( enumParams.hasMoreElements( ) )
+            {
+                String strParamName = enumParams.nextElement( );
+
+                try
+                {
+                    url.addParameter( strParamName, URLEncoder.encode( request.getParameter( strParamName ), "UTF-8" ) );
+                }
+                catch( UnsupportedEncodingException ex )
+                {
+                    AppLogService.error( "Redirection error while encoding URL  in Access Rule Service: {}", ex.getMessage( ), ex );
+                }
+            }
+
+            return    url.getUrl( ) ;
+    	
+    }
     
     
     
