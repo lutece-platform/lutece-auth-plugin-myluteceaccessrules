@@ -80,6 +80,8 @@ public class Rule implements Serializable
     
     private String _strBackUrl;
     
+    private int _nPriorityOrder;
+    
     
     
 
@@ -271,4 +273,20 @@ public class Rule implements Serializable
     {
         return _bLogoutUser;
     }
+
+    /**
+     * 
+     * @return the priority order of teh rule
+     */
+	public int getPriorityOrder() {
+		return _nPriorityOrder;
+	}
+
+	/**
+	 * 
+	 * @param _nPriorityOrder set the priority o
+	 */
+	public void setPriorityOrder(int _nPriorityOrder) {
+		this._nPriorityOrder = _nPriorityOrder;
+	}
 }

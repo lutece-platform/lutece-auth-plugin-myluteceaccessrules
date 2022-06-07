@@ -33,7 +33,9 @@
  */
  package fr.paris.lutece.plugins.myluteceaccessrules.business;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import fr.paris.lutece.plugins.myluteceaccessrules.service.AccessRulesService;
 import fr.paris.lutece.portal.service.datastore.DatastoreService;
@@ -72,9 +74,14 @@ public final class RuleHome
         _dao.insert( rule, _plugin );
         updateRuleUrls(rule);
         updateRuleRoles(rule);
+
+        
+       List<Rule> ruleList=RuleHome.getRulesList();
+       ruleList.add(rule);
+       RuleHome.updateRulesPriorities(ruleList);
         
         AccessRulesService.getInstance().getCache().resetCache();
-        
+       
         
         
         return rule;
@@ -162,6 +169,27 @@ public final class RuleHome
     }
     
     
+    
+ 	public static void updateRulesPriorities(List<Rule> listRules) {
+ 	   //reset cache after updating rules priorities 
+ 		AccessRulesService.getInstance().getCache().resetCache(); 
+ 		if (listRules != null) {
+ 			
+ 			List<Rule> listRulesSorted= listRules.stream().sorted(Comparator.comparingInt(Rule::getPriorityOrder))
+ 	        .collect(Collectors.toList());
+ 			
+ 			int nPriority = listRulesSorted.size();
+ 			for (Rule rule : listRulesSorted) {
+
+ 				rule.setPriorityOrder(nPriority--);
+ 				RuleHome.update(rule);
+
+ 			}
+ 		}
+ 	}
+     
+    
+    
     private static void updateRuleUrls(Rule rule)
     {
     	  int[] idx = { 0 };
@@ -199,7 +227,7 @@ public final class RuleHome
          
            	
     }
-    
+
     
     private static void setRuleUrls(Rule rule)
     {

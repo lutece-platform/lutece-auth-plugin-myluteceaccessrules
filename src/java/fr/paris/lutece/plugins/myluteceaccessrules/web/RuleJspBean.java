@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -147,6 +148,12 @@ public class RuleJspBean extends AbstractManageRulesJspBean
     /** The Constant ACTION_MODIFY_RULE. */
     private static final String ACTION_MODIFY_RULE = "modifyRule";
     
+    /** The Constant ACTION_INCREASE_PRIORITY. */
+    private static final String ACTION_INCREASE_PRIORITY = "increasePriority";
+    /** The Constant ACTION_DECREASE_PRIORITY. */
+    private static final String ACTION_DECREASE_PRIORITY = "decreasePriority";
+    
+    
     /** The Constant ACTION_REMOVE_RULE. */
     private static final String ACTION_REMOVE_RULE = "removeRule";
     
@@ -206,6 +213,9 @@ public class RuleJspBean extends AbstractManageRulesJspBean
         List<Rule> listRules = RuleHome.getRulesList(  );
         Map<String, Object> model = getPaginatedListModel( request, MARK_RULE_LIST, listRules, JSP_MANAGE_RULES );
 
+        model.put( SecurityTokenService.MARK_TOKEN, SecurityTokenService.getInstance( ).getToken( request, ACTION_INCREASE_PRIORITY ) );
+
+        
         return getPage( PROPERTY_PAGE_TITLE_MANAGE_RULES, TEMPLATE_MANAGE_RULES, model );
     }
 
@@ -222,10 +232,6 @@ public class RuleJspBean extends AbstractManageRulesJspBean
 
         Map<String, Object> model = getModel(  );
         model.put( MARK_RULE, _rule );
-        
-        
-
-        
         
         ReferenceList refListRoles=RoleHome.getRolesList(getUser());
         refListRoles.forEach(x-> x.setChecked(_rule.getRoles()!=null && _rule.getRoles().stream().anyMatch(y->y.getName().equals(x.getCode()))));
@@ -262,6 +268,8 @@ public class RuleJspBean extends AbstractManageRulesJspBean
         }
 
         RuleHome.create( _rule );
+        
+        
         addInfo( INFO_RULE_CREATED, getLocale(  ) );
 
         return redirectView( request, VIEW_MANAGE_RULES );
@@ -516,6 +524,100 @@ public class RuleJspBean extends AbstractManageRulesJspBean
 
         return redirectView( request, VIEW_MANAGE_RULES );
     }
+    
+    /**
+     * Process the change form of a rule.
+     *
+     * @param request The Http request
+     * @return The Jsp URL of the process result
+     * @throws AccessDeniedException the access denied exception
+     */
+    @Action( ACTION_INCREASE_PRIORITY )
+    public String doIncreaseRulePriority( HttpServletRequest request ) throws AccessDeniedException
+    {
+      
+    	int nId = Integer.parseInt( request.getParameter( PARAMETER_ID_RULE ) );
+    	 
+        if ( !SecurityTokenService.getInstance( ).validate( request, ACTION_INCREASE_PRIORITY ) )
+        {
+            throw new AccessDeniedException ( "Invalid security token" );
+        }
+
+     
+        List<Rule> listRules=RuleHome.getRulesList();
+        Rule rulePrev=null;
+        
+        for(Rule rule: listRules)
+        {
+        	if(rule.getId()== nId)
+        	{
+        	  if(rulePrev!=null)
+        	  {
+        		  int nPriority=rule.getPriorityOrder();
+        		  rule.setPriorityOrder(rulePrev.getPriorityOrder());
+        		  rulePrev.setPriorityOrder(nPriority);
+        	  }
+        	}
+        	
+        	rulePrev=rule;
+        }
+    
+        RuleHome.updateRulesPriorities(listRules);
+        addInfo( INFO_RULE_UPDATED, getLocale(  ) );
+
+        return redirectView( request, VIEW_MANAGE_RULES );
+    }
+    
+    
+    /**
+     * Process the change form of a rule.
+     *
+     * @param request The Http request
+     * @return The Jsp URL of the process result
+     * @throws AccessDeniedException the access denied exception
+     */
+    @Action( ACTION_DECREASE_PRIORITY )
+    public String doDecreaseRulePriority( HttpServletRequest request ) throws AccessDeniedException
+    {
+      
+    	int nId = Integer.parseInt( request.getParameter( PARAMETER_ID_RULE ) );
+    	 
+        if ( !SecurityTokenService.getInstance( ).validate( request, ACTION_INCREASE_PRIORITY ) )
+        {
+            throw new AccessDeniedException ( "Invalid security token" );
+        }
+
+     
+        List<Rule> listRules=RuleHome.getRulesList();
+        Rule ruleNext=null;
+        
+        for(Rule rule: listRules)
+        {
+        	if(rule.getId()== nId)
+        	{
+        		ruleNext=rule;
+        	 
+        	}
+        	else if(ruleNext!=null)
+        	 {
+       		  	int nPriority=ruleNext.getPriorityOrder();
+       		  	ruleNext.setPriorityOrder(rule.getPriorityOrder());
+       		  	rule.setPriorityOrder(nPriority);
+        	 }
+       	  }
+        	
+        
+    
+        RuleHome.updateRulesPriorities(listRules);
+        addInfo( INFO_RULE_UPDATED, getLocale(  ) );
+
+        return redirectView( request, VIEW_MANAGE_RULES );
+    }
+    
+    
+    
+    
+    
     
     
     /**

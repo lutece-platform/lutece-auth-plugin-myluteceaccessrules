@@ -11,6 +11,7 @@
     <@messages infos=infos />
     <@paginationAdmin paginator=paginator combo=1 />
     <div class="clearfix"></div>
+   <#assign cpt = 0>
     <@table>
         <tr>
             <input type="hidden" id="id" name="id"/>
@@ -22,6 +23,7 @@
         </tr>
         <@tableHeadBodySeparator />
         <#list rule_list as rule >
+       <#assign cpt = cpt + 1>
         <tr>
             <input type="hidden" id="id" name="id"/>
             <td>
@@ -41,10 +43,15 @@
 			</td>
           
         	<td>
+			    
 				<@aButton href='jsp/admin/plugins/myluteceaccessrules/ManageRules.jsp?view=modifyRule&id=${rule.id}' title='#i18n{portal.util.labelModify}' hideTitle=['all'] buttonIcon='pencil' />
-						
-				<@aButton href='jsp/admin/plugins/myluteceaccessrules/ManageRules.jsp?action=confirmRemoveRule&id=${rule.id}' title='#i18n{portal.util.labelDelete}' buttonIcon='trash' hideTitle=['all'] color='btn-danger'  />
-
+			    <@aButton href='jsp/admin/plugins/myluteceaccessrules/ManageRules.jsp?action=confirmRemoveRule&id=${rule.id}' title='#i18n{portal.util.labelDelete}' buttonIcon='trash' hideTitle=['all'] color='btn-danger'  />
+				<#if cpt !=1> 
+			     	<@aButton href='jsp/admin/plugins/myluteceaccessrules/ManageRules.jsp?action=increasePriority&id=${rule.id}&token=${token!""}' title='#i18n{myluteceaccessrules.manage_rules.actionIncreasePriority}' hideTitle=['all'] buttonIcon='chevron-up' />
+			     </#if>
+				<#if rule_has_next>
+				     <@aButton href='jsp/admin/plugins/myluteceaccessrules/ManageRules.jsp?action=decreasePriority&id=${rule.id}&token=${token!""}' title='#i18n{myluteceaccessrules.manage_rules.actionDecreasePriority}' hideTitle=['all'] buttonIcon='chevron-down' />
+				</#if>	
 	        </td>
         </tr>
         </#list>

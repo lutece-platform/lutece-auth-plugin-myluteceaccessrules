@@ -13,5 +13,6 @@ external SMALLINT,
 messagetodisplay long varchar,
 redirecturl varchar(255) default '',
 backurl varchar(255) default '',
+priority_order int default 0 ,
 PRIMARY KEY (id_rule)
 );

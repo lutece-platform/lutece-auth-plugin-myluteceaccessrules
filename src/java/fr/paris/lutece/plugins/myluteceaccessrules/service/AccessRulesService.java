@@ -331,78 +331,80 @@ public final class AccessRulesService
      * @param request the request
      * @return the redirect url
      */
-    public String buildRedirectUrl(Rule rule, HttpServletRequest request)
-    {
-    	
-    	String strRedirectUrl=rule.getRedirecturl();
-    	if(!StringUtils.isEmpty(rule.getBackUrl()))
-    	{
-    		String strBackUrl=rule.getBackUrl();
-    		if(strBackUrl.contains(MARKER_BASE_URL))
-    		{	
-    			
-    			String strBaseUrl="";
-				try {
-					strBaseUrl = AppPathService.getAbsoluteUrl(request, getServiceBackUrl(request));
-				} catch (UnsupportedEncodingException e) {
-					
-					AppLogService.error(e);
-					//get base Url
-					AppPathService.getBaseUrl(request);
-				}
-    			if(strBaseUrl.endsWith("/") && strBackUrl.startsWith("/"))
-    			{
-    				strBackUrl=strBackUrl.substring(1);
-    			
-    			}
-    			if(!strBaseUrl.endsWith("/") && !strBackUrl.startsWith("/"))
-    			{
-    				strBackUrl=strBackUrl+"/";
-    			
-    			}
-    		
-    		strBackUrl=strBackUrl.replaceAll("\\"+MARKER_BASE_URL, strBaseUrl);
-    		}
-    		try {
-				strBackUrl=URLEncoder.encode(strBackUrl, StandardCharsets.UTF_8.toString());
-			} catch (UnsupportedEncodingException e) {
-				
-				AppLogService.error("An error appear during Url encode the back url {}",strBackUrl,e);
+	public String buildRedirectUrl(Rule rule, HttpServletRequest request) {
+
+		String strRedirectUrl = rule.getRedirecturl();
+		String strBackUrl = rule.getBackUrl();
+		if (StringUtils.isEmpty(strBackUrl)) {
+			strBackUrl = getDefaultServiceBackUrl(request);
+
+		} else if (strBackUrl.contains(MARKER_BASE_URL)) {
+
+			String strBaseUrl = AppPathService.getBaseUrl(request);
+
+			if (strBaseUrl.endsWith("/") && strBackUrl.startsWith("/")) {
+				strBackUrl = strBackUrl.substring(1);
+
 			}
-    		strRedirectUrl=strRedirectUrl.replaceAll("\\"+MARKER_BACK_URL, strBackUrl);
-    	
-    	
-    }
-    	return strRedirectUrl;
+			if (!strBaseUrl.endsWith("/") && !strBackUrl.startsWith("/")) {
+				strBackUrl = strBackUrl + "/";
+
+			}
+
+			strBackUrl = strBackUrl.replaceAll("\\" + MARKER_BASE_URL, strBaseUrl);
+		}
+		try {
+			strBackUrl = URLEncoder.encode(strBackUrl, StandardCharsets.UTF_8.toString());
+		} catch (UnsupportedEncodingException e) {
+
+			AppLogService.error("An error appear during Url encode the back url {}", strBackUrl, e);
+		}
+		strRedirectUrl = strRedirectUrl.replaceAll("\\" + MARKER_BACK_URL, strBackUrl);
+
+		return strRedirectUrl;
+
+	}
     
-    }
     
-    
-    private String getServiceBackUrl( HttpServletRequest request) throws UnsupportedEncodingException
+    private String getDefaultServiceBackUrl( HttpServletRequest request)
     {
     	
     	
-            String strNextUrl = request.getServletPath();
-           
+          String strDefaultBackUrl=""; 
+    	   String strNextUrl = request.getServletPath();
              
             UrlItem url = new UrlItem( strNextUrl );
             Enumeration<String> enumParams = request.getParameterNames( );
 
-            while ( enumParams.hasMoreElements( ) )
+            
+            try
             {
-                String strParamName = enumParams.nextElement( );
-
-                try
-                {
-                    url.addParameter( strParamName, URLEncoder.encode( request.getParameter( strParamName ), "UTF-8" ) );
-                }
-                catch( UnsupportedEncodingException ex )
-                {
-                    AppLogService.error( "Redirection error while encoding URL  in Access Rule Service: {}", ex.getMessage( ), ex );
-                }
+	            while ( enumParams.hasMoreElements( ) )
+	            {
+	                String strParamName = enumParams.nextElement( );
+	
+	               
+	                    url.addParameter( strParamName, URLEncoder.encode( request.getParameter( strParamName ), "UTF-8" ) );
+	                }
+	            	strDefaultBackUrl=url.getUrl( ) ;
+	            	if(strDefaultBackUrl.startsWith("/"))
+	            	{
+	            		strDefaultBackUrl=strDefaultBackUrl.substring(1);
+	            	}
+	            	
+	            	strDefaultBackUrl= AppPathService.getAbsoluteUrl(request, strDefaultBackUrl);
+	            	
+	          }
+            
+            catch( UnsupportedEncodingException ex )
+            {
+                AppLogService.error( "Redirection error while encoding URL  in Access Rule Service: {}", ex.getMessage( ), ex );
+                strDefaultBackUrl=AppPathService.getBaseUrl(request);
             }
 
-            return    url.getUrl( ) ;
+          return strDefaultBackUrl;
+             
+            
     	
     }
     
