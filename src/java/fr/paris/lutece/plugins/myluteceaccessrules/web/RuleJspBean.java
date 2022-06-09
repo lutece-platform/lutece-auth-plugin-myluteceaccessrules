@@ -188,13 +188,13 @@ public class RuleJspBean extends AbstractManageRulesJspBean
 
     /** The Constant INFO_RULE_CREATED. */
     // Infos
-    private static final String INFO_RULE_CREATED = "accessrules.info.rule.created";
+    private static final String INFO_RULE_CREATED = "myluteceaccessrules.info.rule.created";
     
     /** The Constant INFO_RULE_UPDATED. */
-    private static final String INFO_RULE_UPDATED = "accessrules.info.rule.updated";
+    private static final String INFO_RULE_UPDATED = "myluteceaccessrules.info.rule.updated";
     
     /** The Constant INFO_RULE_REMOVED. */
-    private static final String INFO_RULE_REMOVED = "accessrules.info.rule.removed";
+    private static final String INFO_RULE_REMOVED = "myluteceaccessrules.info.rule.removed";
     
     /** The rule. */
     // Session variable to store working values

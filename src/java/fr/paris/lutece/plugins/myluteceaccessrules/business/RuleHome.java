@@ -170,15 +170,20 @@ public final class RuleHome
     
     
     
- 	public static void updateRulesPriorities(List<Rule> listRules) {
+ 	/**
+	  * Update rules priorities.
+	  *
+	  * @param listRules the list rules
+	  */
+	 public static void updateRulesPriorities(List<Rule> listRules) {
  	   //reset cache after updating rules priorities 
  		AccessRulesService.getInstance().getCache().resetCache(); 
  		if (listRules != null) {
  			
- 			List<Rule> listRulesSorted= listRules.stream().sorted(Comparator.comparingInt(Rule::getPriorityOrder))
+ 			List<Rule> listRulesSorted= listRules.stream().sorted(Comparator.comparingInt(Rule::getPriorityOrder).reversed())
  	        .collect(Collectors.toList());
  			
- 			int nPriority = listRulesSorted.size();
+ 			int nPriority = listRulesSorted.size()+1;
  			for (Rule rule : listRulesSorted) {
 
  				rule.setPriorityOrder(nPriority--);
