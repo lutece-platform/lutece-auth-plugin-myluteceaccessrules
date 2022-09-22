@@ -5,6 +5,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd" >
 
     <bean id="myluteceaccessrules.ruleDAO" class="fr.paris.lutece.plugins.myluteceaccessrules.business.RuleDAO" />
+    <bean id="myluteceaccessrules.myluteceAccessRulesSitePropertiesGroup" class="fr.paris.lutece.plugins.myluteceaccessrules.service.MyluteceAccessRulesSitePropertiesGroup" />
 
 
 </beans>
