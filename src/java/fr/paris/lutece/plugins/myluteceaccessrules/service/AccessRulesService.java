@@ -64,8 +64,11 @@ import fr.paris.lutece.util.url.UrlItem;
 public final class AccessRulesService
 {
     
-    /** Session attribute that stores the LuteceUser object attached to the session. */
-    
+   
+	/** Parameter NB REDIRECT */
+	public static final String PARAMETER_NB_REDIRECT = "accessrules_nb_redirect";
+	
+	/** Session attribute that stores the LuteceUser object attached to the session. */
 	public static final String I18N_DEFAULT_MESSAGE_UNAUTHORIZED="myluteceaccessrules.message.unauthorized";
 	
 	/** The Constant I18N_DEFAULT_TITLE_MESSAGE_UNAUTHORIZED. */
@@ -79,6 +82,11 @@ public final class AccessRulesService
     
     /** The Constant MARK_PORTAL_AUTHENTICATION_REQUIRED. */
     public static final String MARK_PORTAL_AUTHENTICATION_REQUIRED = "portal_authentication_required";
+    
+    
+    /** Parameter NB REDIRECT */
+	public static final String PROPERTY_MAX_REDIRECT= "myluteceaccessrules.maxRedirect";
+	
     
     /** The Constant MARK_LOCALE. */
     private static final String MARK_LOCALE = "locale";
@@ -106,6 +114,11 @@ public final class AccessRulesService
     
     /** The Constant MARKER_BACK_URL. */
     private static final String MARKER_BACK_URL = "$backurl";
+    
+    
+    
+    
+    
     
     
     /** The singleton. */
@@ -329,14 +342,15 @@ public final class AccessRulesService
      *
      * @param rule the rule
      * @param request the request
+     * @param nbRedirect 
      * @return the redirect url
      */
-	public String buildRedirectUrl(Rule rule, HttpServletRequest request) {
+	public String buildRedirectUrl(Rule rule, HttpServletRequest request,int nbRedirect) {
 
 		String strRedirectUrl = rule.getRedirecturl();
 		String strBackUrl = rule.getBackUrl();
 		if (StringUtils.isEmpty(strBackUrl)) {
-			strBackUrl = getDefaultServiceBackUrl(request);
+			strBackUrl = getDefaultServiceBackUrl(request,nbRedirect);
 
 		} else if (strBackUrl.contains(MARKER_BASE_URL)) {
 
@@ -366,7 +380,7 @@ public final class AccessRulesService
 	}
     
     
-    private String getDefaultServiceBackUrl( HttpServletRequest request)
+    private String getDefaultServiceBackUrl( HttpServletRequest request,int nbRedirect)
     {
     	
     	
@@ -386,6 +400,7 @@ public final class AccessRulesService
 	               
 	                    url.addParameter( strParamName, URLEncoder.encode( request.getParameter( strParamName ), "UTF-8" ) );
 	                }
+	                url.addParameter(AccessRulesService.PARAMETER_NB_REDIRECT, nbRedirect+1);
 	            	strDefaultBackUrl=url.getUrl( ) ;
 	            	if(strDefaultBackUrl.startsWith("/"))
 	            	{

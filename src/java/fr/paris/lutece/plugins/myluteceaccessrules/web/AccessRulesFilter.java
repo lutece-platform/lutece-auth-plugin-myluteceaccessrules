@@ -55,6 +55,7 @@ import fr.paris.lutece.portal.service.message.SiteMessageException;
 import fr.paris.lutece.portal.service.message.SiteMessageService;
 import fr.paris.lutece.portal.service.security.SecurityService;
 import fr.paris.lutece.portal.service.util.AppPathService;
+import fr.paris.lutece.portal.service.util.AppPropertiesService;
 
 
 /**
@@ -90,16 +91,18 @@ public class AccessRulesFilter implements Filter
     {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse resp = (HttpServletResponse) response;
-
+        		
         if ( AccessRulesService.getInstance().isAccessRulesEnabled()&&  SecurityService.getInstance(  ).getRegisteredUser( req ) !=null && isPrivateUrl( req ) && AccessRulesService.getInstance().geFirstRuleTriggered(req)!=null )
         {
            
         	Rule rule=AccessRulesService.getInstance().geFirstRuleTriggered(req);
         	//Logout User if the rule is not verified
         	SecurityService.getInstance().logoutUser(req);
-        	if(rule.isExternal() && StringUtils.isNotEmpty(rule.getRedirecturl()))
+        	 int nbRedirect=StringUtils.isEmpty(request.getParameter( AccessRulesService.PARAMETER_NB_REDIRECT)) ? Integer.parseInt(req.getParameter( AccessRulesService.PARAMETER_NB_REDIRECT)):0;      
+        	      
+        	if(nbRedirect < AppPropertiesService.getPropertyInt(AccessRulesService.PROPERTY_MAX_REDIRECT, 10)  && rule.isExternal() && StringUtils.isNotEmpty(rule.getRedirecturl()))
         	{
-        		resp.sendRedirect(  AccessRulesService.getInstance().buildRedirectUrl(rule, req));
+        		resp.sendRedirect(  AccessRulesService.getInstance().buildRedirectUrl(rule, req,nbRedirect));
         	}
         	else
         	{
