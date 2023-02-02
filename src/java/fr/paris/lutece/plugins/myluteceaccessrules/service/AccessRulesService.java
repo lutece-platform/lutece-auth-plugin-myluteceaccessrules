@@ -347,7 +347,8 @@ public final class AccessRulesService
      */
 	public String buildRedirectUrl(Rule rule, HttpServletRequest request,int nbRedirect) {
 
-		String strRedirectUrl = rule.getRedirecturl();
+		String strRedirectUrl = getAbsoluteUrl( request,rule.getRedirecturl());
+		
 		String strBackUrl = rule.getBackUrl();
 		if (StringUtils.isEmpty(strBackUrl)) {
 			strBackUrl = getDefaultServiceBackUrl(request,nbRedirect);
