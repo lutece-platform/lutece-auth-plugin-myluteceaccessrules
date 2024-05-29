@@ -145,7 +145,7 @@ public class AccessRulesFilter implements Filter
      * */
     private boolean isPrivateUrl( HttpServletRequest request )
     {
-        return !( ( isInSiteMessageUrl( request ) || ( isInPublicUrlList( request ) ) ) );
+        return !( isInSiteMessageUrl( request )   );
     }
 
    
