@@ -369,17 +369,23 @@ public final class AccessRulesService
 
 			strBackUrl = strBackUrl.replaceAll("\\" + MARKER_BASE_URL, strBaseUrl);
 		}
-		try {
-			strBackUrl = URLEncoder.encode(strBackUrl, StandardCharsets.UTF_8.toString());
-		} catch (UnsupportedEncodingException e) {
-
-			AppLogService.error("An error appear during Url encode the back url {}", strBackUrl, e);
+		
+		if(!rule.isEncodeBackUrl())
+		{
+		
+			try {
+				strBackUrl = URLEncoder.encode(strBackUrl, StandardCharsets.UTF_8.toString());
+			} catch (UnsupportedEncodingException e) {
+	
+				AppLogService.error("An error appear during Url encode the back url {}", strBackUrl, e);
+			}
 		}
-		if(rule.isEncodeBackUrl())
+		else
 		{
 			strBackUrl=encodeUrl(strBackUrl);
 			
 		}
+		
 		strRedirectUrl = strRedirectUrl.replaceAll("\\" + MARKER_BACK_URL, strBackUrl);
 
 		return strRedirectUrl;

@@ -32,7 +32,7 @@ ${rule.external?then('show','')}
           	<@input type='text' id='backUrl' name='backUrl'  maxlength=255 value='${rule.backUrl!\'\'}' tabIndex='5' />
 		</@formGroup>
 		<@formGroup labelFor='encodeBackUrl' class="messagetodisplayGroup collapse  ${rule.external?then('show','')}" labelKey='#i18n{myluteceaccessrules.modify_rule.labelEncodeBackUrl}' helpKey='#i18n{myluteceaccessrules.modify_rule.labelEncodeBackUrl.help}'>
-			<@checkBox id="encodeBackUrl"  orientation='switch'  name="enable"  value="1" checked=rule.encodeBackUrl!'false' tabIndex='2' />
+			<@checkBox id="encodeBackUrl"  orientation='switch'  name="encodeBackUrl"  value="1" checked=rule.encodeBackUrl!'false' tabIndex='2' />
 		</@formGroup>
 		
 	
