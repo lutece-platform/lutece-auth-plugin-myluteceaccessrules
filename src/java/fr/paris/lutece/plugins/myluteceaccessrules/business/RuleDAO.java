@@ -48,11 +48,11 @@ import java.util.List;
 public final class RuleDAO implements IRuleDAO
 {
     // Constants
-    private static final String SQL_QUERY_SELECT = "SELECT id_rule, title, description, enable, external, messagetodisplay, redirecturl, backurl,priority_order FROM mylutece_accessrules_rule WHERE id_rule = ? ";
-    private static final String SQL_QUERY_INSERT = "INSERT INTO mylutece_accessrules_rule ( title, description, enable, external, messagetodisplay, redirecturl, backurl,priority_order ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? ) ";
+    private static final String SQL_QUERY_SELECT = "SELECT id_rule, title, description, enable, external, messagetodisplay, redirecturl, backurl,priority_order,encodebackurl FROM mylutece_accessrules_rule WHERE id_rule = ? ";
+    private static final String SQL_QUERY_INSERT = "INSERT INTO mylutece_accessrules_rule ( title, description, enable, external, messagetodisplay, redirecturl, backurl,priority_order, encodebackurl ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ? ) ";
     private static final String SQL_QUERY_DELETE = "DELETE FROM mylutece_accessrules_rule WHERE id_rule = ? ";
-    private static final String SQL_QUERY_UPDATE = "UPDATE mylutece_accessrules_rule SET id_rule = ?, title = ?, description = ?, enable = ?, external = ?, messagetodisplay = ?, redirecturl = ?, backurl= ? ,priority_order=? WHERE id_rule = ?";
-    private static final String SQL_QUERY_SELECTALL = "SELECT id_rule, title, description, enable, external, messagetodisplay, redirecturl,backurl,priority_order FROM mylutece_accessrules_rule ORDER BY priority_order DESC ";
+    private static final String SQL_QUERY_UPDATE = "UPDATE mylutece_accessrules_rule SET id_rule = ?, title = ?, description = ?, enable = ?, external = ?, messagetodisplay = ?, redirecturl = ?, backurl= ? ,priority_order=?,encodebackurl= ? WHERE id_rule = ?";
+    private static final String SQL_QUERY_SELECTALL = "SELECT id_rule, title, description, enable, external, messagetodisplay, redirecturl, backurl, priority_order, encodebackurl FROM mylutece_accessrules_rule ORDER BY priority_order DESC ";
     private static final String SQL_QUERY_SELECTALL_ID = "SELECT id_rule FROM mylutece_accessrules_rule";
 
     /**
@@ -72,6 +72,7 @@ public final class RuleDAO implements IRuleDAO
             daoUtil.setString( nIndex++ , rule.getRedirecturl( ) );
             daoUtil.setString( nIndex++ , rule.getBackUrl() );
             daoUtil.setInt( nIndex++ , rule.getPriorityOrder() );
+            daoUtil.setBoolean( nIndex++ , rule.isEncodeBackUrl());
             
             
             daoUtil.executeUpdate( );
@@ -108,8 +109,8 @@ public final class RuleDAO implements IRuleDAO
 	            rule.setMessagetodisplay( daoUtil.getString( nIndex++ ) );            
 	            rule.setRedirecturl( daoUtil.getString( nIndex++ ) );
 	            rule.setBackUrl( daoUtil.getString( nIndex++ ) );
-	            rule.setPriorityOrder(daoUtil.getInt(nIndex));
-	            
+	            rule.setPriorityOrder(daoUtil.getInt(nIndex++));
+	            rule.setEncodeBackUrl(daoUtil.getBoolean( nIndex ));
 	            
 	        }
 	
@@ -151,6 +152,7 @@ public final class RuleDAO implements IRuleDAO
 	        daoUtil.setString( nIndex++ , rule.getRedirecturl( ) );
 	        daoUtil.setString( nIndex++ , rule.getBackUrl() );
 	        daoUtil.setInt( nIndex++ , rule.getPriorityOrder() );
+	        daoUtil.setBoolean( nIndex++ , rule.isEncodeBackUrl());
 	        
 	        daoUtil.setInt( nIndex , rule.getId( ) );
 	
@@ -183,8 +185,8 @@ public final class RuleDAO implements IRuleDAO
 	            rule.setMessagetodisplay( daoUtil.getString( nIndex++ ) );
 	            rule.setRedirecturl( daoUtil.getString( nIndex++ ) );       
 	            rule.setBackUrl( daoUtil.getString( nIndex++ ) ); 
-	            rule.setPriorityOrder(daoUtil.getInt(nIndex));
-	
+	            rule.setPriorityOrder(daoUtil.getInt( nIndex++ ));
+	            rule.setEncodeBackUrl(daoUtil.getBoolean( nIndex ));
 	            ruleList.add( rule );
 	        }
 	

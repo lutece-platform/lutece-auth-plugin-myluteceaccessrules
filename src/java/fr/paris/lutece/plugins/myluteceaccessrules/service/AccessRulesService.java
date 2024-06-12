@@ -36,6 +36,7 @@ package fr.paris.lutece.plugins.myluteceaccessrules.service;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
@@ -374,6 +375,11 @@ public final class AccessRulesService
 
 			AppLogService.error("An error appear during Url encode the back url {}", strBackUrl, e);
 		}
+		if(rule.isEncodeBackUrl())
+		{
+			strBackUrl=encodeUrl(strBackUrl);
+			
+		}
 		strRedirectUrl = strRedirectUrl.replaceAll("\\" + MARKER_BACK_URL, strBackUrl);
 
 		return strRedirectUrl;
@@ -421,6 +427,17 @@ public final class AccessRulesService
           return strDefaultBackUrl;
              
             
+    	
+    }
+    
+    /**
+     * encode url in base64
+     * @param strUrl the url to encode
+     * @return an url encode in base64
+     */
+    private   String  encodeUrl(String strUrl)
+    {
+    	return !StringUtils.isEmpty(strUrl) ?  new String(Base64.getUrlEncoder().encode(strUrl.getBytes( StandardCharsets.UTF_8 ))):"";
     	
     }
     

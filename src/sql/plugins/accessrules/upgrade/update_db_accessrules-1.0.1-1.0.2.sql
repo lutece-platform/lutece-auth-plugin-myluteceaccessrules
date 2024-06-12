@@ -1,0 +1,1 @@
+ALTER TABLE mylutece_accessrules_rule add COLUMN encodebackurl SMALLINT;

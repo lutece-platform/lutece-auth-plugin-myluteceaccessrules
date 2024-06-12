@@ -31,6 +31,10 @@ ${rule.external?then('show','')}
 		<@formGroup id="backUrlGroup" class="messagetodisplayGroup collapse  ${rule.external?then('show','')}" labelFor='backUrl' labelKey='#i18n{myluteceaccessrules.modify_rule.labelBackUrl}' helpKey='#i18n{myluteceaccessrules.modify_rule.labelBackUrl.help}' mandatory=false>
           	<@input type='text' id='backUrl' name='backUrl'  maxlength=255 value='${rule.backUrl!\'\'}' tabIndex='5' />
 		</@formGroup>
+		<@formGroup labelFor='encodeBackUrl' class="messagetodisplayGroup collapse  ${rule.external?then('show','')}" labelKey='#i18n{myluteceaccessrules.modify_rule.labelEncodeBackUrl}' helpKey='#i18n{myluteceaccessrules.modify_rule.labelEncodeBackUrl.help}'>
+			<@checkBox id="encodeBackUrl"  orientation='switch'  name="enable"  value="1" checked=rule.encodeBackUrl!'false' tabIndex='2' />
+		</@formGroup>
+		
 	
 		<@formGroup labelFor='roles_list' labelKey='#i18n{myluteceaccessrules.modify_rule.labelRoles}' helpKey='#i18n{myluteceaccessrules.modify_rule.labelRoles.help}' >
 			<#list roles_list as role>

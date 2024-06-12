@@ -14,5 +14,7 @@ messagetodisplay long varchar,
 redirecturl varchar(255) default '',
 backurl varchar(255) default '',
 priority_order int default 0 ,
+encodebackurl SMALLINT,
+
 PRIMARY KEY (id_rule)
 );

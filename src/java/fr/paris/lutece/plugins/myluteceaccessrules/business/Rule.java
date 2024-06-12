@@ -46,50 +46,75 @@ import org.hibernate.validator.constraints.NotEmpty;
 import fr.paris.lutece.util.ReferenceList;
 
 /**
- * This is the business class for the object Rule
+ * This is the business class for the object Rule.
  */ 
 public class Rule implements Serializable
 {
+    
+    /** The Constant serialVersionUID. */
     private static final long serialVersionUID = 1L;
     
   
+    /** The n id. */
     // Variables declarations 
     private int _nId;
     
+    /** The str title. */
     @NotEmpty( message = "#i18n{myluteceaccessrules.validation.rule.Title.notEmpty}" )
     @Size( max = 50 , message = "#i18n{myluteceaccessrules.validation.rule.Title.size}" ) 
     private String _strTitle;
     
+    /** The str description. */
     @Size( max = 255 , message = "#i18n{myluteceaccessrules.validation.rule.Description.size}" ) 
     private String _strDescription;
     
     
+    /** The b enable. */
     @Nullable
     private boolean _bEnable;
+    
+    /** The b external. */
     @Nullable
     private boolean _bExternal;
-    
+   
+    /** The b encode back url. */
     @Nullable
+    private boolean _bEncodeBackUrl;
+   
+    
+   
+
+	/** The b logout user. */
+	@Nullable
     private boolean _bLogoutUser;
     
     
+    /** The str messagetodisplay. */
     private String _strMessagetodisplay;
     
+    /** The str redirecturl. */
     @Size( max = 255 , message = "#i18n{myluteceaccessrules.validation.rule.Redirecturl.size}" ) 
     private String _strRedirecturl;
     
+    /** The str back url. */
     private String _strBackUrl;
     
+    /** The n priority order. */
     private int _nPriorityOrder;
     
     
     
 
 
+	/** The list protected urls. */
 	@Nullable
     private ReferenceList  _listProtectedUrls;
+    
+    /** The list public urls. */
     @Nullable
     private ReferenceList  _listPublicUrls;
+	
+	/** The list roles. */
 	private ReferenceList _listRoles;
      
     
@@ -97,7 +122,8 @@ public class Rule implements Serializable
     
 
     /**
-     * Returns the Id
+     * Returns the Id.
+     *
      * @return The Id
      */
     public int getId( )
@@ -106,7 +132,8 @@ public class Rule implements Serializable
     }
 
     /**
-     * Sets the Id
+     * Sets the Id.
+     *
      * @param nId The Id
      */ 
     public void setId( int nId )
@@ -115,7 +142,8 @@ public class Rule implements Serializable
     }
     
     /**
-     * Returns the Title
+     * Returns the Title.
+     *
      * @return The Title
      */
     public String getTitle( )
@@ -124,7 +152,8 @@ public class Rule implements Serializable
     }
 
     /**
-     * Sets the Title
+     * Sets the Title.
+     *
      * @param strTitle The Title
      */ 
     public void setTitle( String strTitle )
@@ -133,7 +162,8 @@ public class Rule implements Serializable
     }
     
     /**
-     * Returns the Description
+     * Returns the Description.
+     *
      * @return The Description
      */
     public String getDescription( )
@@ -142,7 +172,8 @@ public class Rule implements Serializable
     }
 
     /**
-     * Sets the Description
+     * Sets the Description.
+     *
      * @param strDescription The Description
      */ 
     public void setDescription( String strDescription )
@@ -151,7 +182,8 @@ public class Rule implements Serializable
     }
     
     /**
-     * Returns the Enable
+     * Returns the Enable.
+     *
      * @return The Enable
      */
     public boolean getEnable( )
@@ -160,7 +192,8 @@ public class Rule implements Serializable
     }
 
     /**
-     * Sets the Enable
+     * Sets the Enable.
+     *
      * @param bEnable The Enable
      */ 
     public void setEnable( boolean bEnable )
@@ -169,7 +202,8 @@ public class Rule implements Serializable
     }
     
     /**
-     * Returns the External
+     * Returns the External.
+     *
      * @return The External
      */
     public boolean isExternal( )
@@ -178,7 +212,8 @@ public class Rule implements Serializable
     }
 
     /**
-     * Sets the External
+     * Sets the External.
+     *
      * @param bExternal The External
      */ 
     public void setExternal( boolean bExternal )
@@ -187,7 +222,8 @@ public class Rule implements Serializable
     }
     
     /**
-     * Returns the Messagetodisplay
+     * Returns the Messagetodisplay.
+     *
      * @return The Messagetodisplay
      */
     public String getMessagetodisplay( )
@@ -196,7 +232,8 @@ public class Rule implements Serializable
     }
 
     /**
-     * Sets the Messagetodisplay
+     * Sets the Messagetodisplay.
+     *
      * @param strMessagetodisplay The Messagetodisplay
      */ 
     public void setMessagetodisplay( String strMessagetodisplay )
@@ -205,7 +242,8 @@ public class Rule implements Serializable
     }
     
     /**
-     * Returns the Redirecturl
+     * Returns the Redirecturl.
+     *
      * @return The Redirecturl
      */
     public String getRedirecturl( )
@@ -214,7 +252,8 @@ public class Rule implements Serializable
     }
 
     /**
-     * Sets the Redirecturl
+     * Sets the Redirecturl.
+     *
      * @param strRedirecturl The Redirecturl
      */ 
     public void setRedirecturl( String strRedirecturl )
@@ -222,51 +261,93 @@ public class Rule implements Serializable
         _strRedirecturl = strRedirecturl;
     }
 
+	/**
+	 * Gets the protected urls.
+	 *
+	 * @return the protected urls
+	 */
 	public ReferenceList getProtectedUrls() {
 		return _listProtectedUrls;
 	}
 
+	/**
+	 * Sets the protected urls.
+	 *
+	 * @param listProtectedUrls the new protected urls
+	 */
 	public void setProtectedUrls(ReferenceList listProtectedUrls) {
 		this._listProtectedUrls = listProtectedUrls;
 	}
 	
 	
+	/**
+	 * Gets the public urls.
+	 *
+	 * @return the public urls
+	 */
 	public ReferenceList getPublicUrls() {
 		return _listPublicUrls;
 	}
 
+	/**
+	 * Sets the public urls.
+	 *
+	 * @param listPublicUrls the new public urls
+	 */
 	public void setPublicUrls(ReferenceList listPublicUrls) {
 		this._listPublicUrls = listPublicUrls;
 	}
 
+	/**
+	 * Gets the roles.
+	 *
+	 * @return the roles
+	 */
 	public ReferenceList  getRoles() {
 		return _listRoles;
 	}
 
+	/**
+	 * Sets the roles.
+	 *
+	 * @param listRoles the new roles
+	 */
 	public void setRoles(ReferenceList listRoles) {
 		this._listRoles = listRoles;
 	}
 	
 	
+    /**
+     * Gets the back url.
+     *
+     * @return the back url
+     */
     public String getBackUrl() {
 		return _strBackUrl;
 	}
 
+	/**
+	 * Sets the back url.
+	 *
+	 * @param _strBackUrlParameter the new back url
+	 */
 	public void setBackUrl(String _strBackUrlParameter) {
 		this._strBackUrl = _strBackUrlParameter;
 	}
 	
 	/**
-     * Sets  Logout User
-     * @param bLogoutUser logout user
-     */ 
+	 * Sets  Logout User.
+	 *
+	 * @param bLogoutUser logout user
+	 */ 
     public void setLogoutUser( boolean bLogoutUser )
     {
     	_bLogoutUser = bLogoutUser;
     }
     
     /**
-     * Returns the true if the user muset be logout
+     * Returns the true if the user muset be logout.
+     *
      * @return true if the user muset be logout
      */
     public boolean isLogoutUser( )
@@ -275,7 +356,8 @@ public class Rule implements Serializable
     }
 
     /**
-     * 
+     * Gets the priority order.
+     *
      * @return the priority order of teh rule
      */
 	public int getPriorityOrder() {
@@ -283,10 +365,29 @@ public class Rule implements Serializable
 	}
 
 	/**
-	 * 
+	 * Sets the priority order.
+	 *
 	 * @param _nPriorityOrder set the priority o
 	 */
 	public void setPriorityOrder(int _nPriorityOrder) {
 		this._nPriorityOrder = _nPriorityOrder;
+	}
+	
+	 /**
+ 	 * Checks if is encode back url.
+ 	 *
+ 	 * @return true, if is encode back url
+ 	 */
+ 	public boolean isEncodeBackUrl() {
+			return _bEncodeBackUrl;
+		}
+
+	/**
+	 * Sets the encode back url.
+	 *
+	 * @param _bEncodeBackUrl the new encode back url
+	 */
+	public void setEncodeBackUrl(boolean _bEncodeBackUrl) {
+		this._bEncodeBackUrl = _bEncodeBackUrl;
 	}
 }
