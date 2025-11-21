@@ -1,3 +1,6 @@
+-- liquibase formatted sql
+-- changeset myluteceaccessrules:create_db_accessrules.sql
+-- preconditions onFail:MARK_RAN onError:WARN
 
 --
 -- Structure for table mylutece_accessrules_rule

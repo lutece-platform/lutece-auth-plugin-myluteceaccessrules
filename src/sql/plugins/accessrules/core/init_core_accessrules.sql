@@ -1,3 +1,6 @@
+-- liquibase formatted sql
+-- changeset myluteceaccessrules:init_core_accessrules.sql
+-- preconditions onFail:MARK_RAN onError:WARN
 
 --
 -- Data for table core_admin_right
