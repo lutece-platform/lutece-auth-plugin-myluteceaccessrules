@@ -2,21 +2,24 @@ package fr.paris.lutece.plugins.myluteceaccessrules.service;
 
 import java.util.ArrayList;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.junit.Test;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.test.util.ReflectionTestUtils;
-
 import fr.paris.lutece.plugins.myluteceaccessrules.business.Rule;
 import fr.paris.lutece.plugins.myluteceaccessrules.business.RuleHome;
+import fr.paris.lutece.portal.service.init.LuteceInitException;
 import fr.paris.lutece.portal.service.security.LuteceUser;
 import fr.paris.lutece.portal.service.security.SecurityService;
 import fr.paris.lutece.test.LuteceTestCase;
+import fr.paris.lutece.test.ReflectionTestUtils;
+import fr.paris.lutece.test.mocks.MockHttpServletRequest;
 import fr.paris.lutece.util.ReferenceList;
-import freemarker.ext.beans.TemplateAccessible;
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 public class AccessRulesServiceTest extends LuteceTestCase{
+
+	@Inject
+	private AccessRulesService _accessRulesService;
 
 	  private static final String NAME = "NAME";
 	  private static final String ROLE1 = "ROLE1";
@@ -28,7 +31,7 @@ public class AccessRulesServiceTest extends LuteceTestCase{
 	  private static final String ERROR_MESSAGE_INTERNAL_RULE="error internal rule detected";
 	
 	@Test
-	public void testProtectedUrl()
+	public void testProtectedUrl() throws LuteceInitException
 	{
 		
 		MockHttpServletRequest request = new MockHttpServletRequest();
@@ -48,7 +51,7 @@ public class AccessRulesServiceTest extends LuteceTestCase{
 		request.setServletPath("/jsp/site/Portal.jsp?page=test");
 		
 	
-		Rule rule=AccessRulesService.getInstance().geFirstRuleTriggered(request);	
+		Rule rule=_accessRulesService.getFirstRuleTriggered(request);
 		
 		
 	
@@ -57,7 +60,7 @@ public class AccessRulesServiceTest extends LuteceTestCase{
 	}
 	
 	@Test
-	public void testPublicUrl()
+	public void testPublicUrl() throws LuteceInitException
 	{
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		initTestUserWithAuthMod(request);
@@ -68,14 +71,14 @@ public class AccessRulesServiceTest extends LuteceTestCase{
 		request.setServletPath("/jsp/site/Portal.jsp?page=test&view=all");
 		
 	
-		Rule rule=AccessRulesService.getInstance().geFirstRuleTriggered(request);	
+		Rule rule=_accessRulesService.getFirstRuleTriggered(request);
 		assertTrue(rule==null);
 		
 	}
 	
 	
 	@Test
-	public void testUserNotAuthorized()
+	public void testUserNotAuthorized() throws LuteceInitException
 	{
 		
 		MockHttpServletRequest request = new MockHttpServletRequest();
@@ -84,21 +87,16 @@ public class AccessRulesServiceTest extends LuteceTestCase{
 		ArrayList<String> listRoles = new ArrayList( );
 	    listRoles.add( ROLE1 );
 
-	    
-	     user.setRoles( listRoles );
+		user.setRoles( listRoles );
 		
 		insertTestRule();
-		
-		
-		
 
 		request.setRequestURI("jsp/site/Portal.jsp?page=test");
 		request.setServletPath("/jsp/site/Portal.jsp?page=test");
-		
-	
-		Rule rule=AccessRulesService.getInstance().geFirstRuleTriggered(request);	
+
+
+		Rule rule=_accessRulesService.getFirstRuleTriggered(request);
 		assertTrue(rule!=null);
-		
 	}
 	
 	
@@ -126,12 +124,24 @@ public class AccessRulesServiceTest extends LuteceTestCase{
 	  RuleHome.create(internalRule);
 	  
   }
-  
-  LuteceUser initTestUserWithAuthMod(HttpServletRequest request)
+
+  private void enableAuthentication( ) throws LuteceInitException
   {
-	  
+	  boolean status = SecurityService.isAuthenticationEnable( );
+	  if ( !status )
+	  {
+		  System.setProperty( "mylutece.authentication.enable", "true" );
+		  System.setProperty( "mylutece.authentication.class", MokeLuteceAuthentication.class.getName( ) );
+		  SecurityService.init( );
+	  }
+  }
+  
+  LuteceUser initTestUserWithAuthMod(HttpServletRequest request) throws LuteceInitException
+  {
+	  enableAuthentication( );
+
 	  SecurityService securityService = SecurityService.getInstance( );
-      MokeLuteceAuthentication mockLuteceAuthentication = new MokeLuteceAuthentication( );  
+      MokeLuteceAuthentication mockLuteceAuthentication = new MokeLuteceAuthentication( );
       ReflectionTestUtils.setField( securityService, "_authenticationService", mockLuteceAuthentication );
       
       MokeLuteceUser user = new MokeLuteceUser( NAME, mockLuteceAuthentication );
@@ -144,8 +154,8 @@ public class AccessRulesServiceTest extends LuteceTestCase{
       
       return user;
   }
-  
-  @Override
+
+  @AfterEach
   public void tearDown( ) throws Exception
   {
 	  super.tearDown();

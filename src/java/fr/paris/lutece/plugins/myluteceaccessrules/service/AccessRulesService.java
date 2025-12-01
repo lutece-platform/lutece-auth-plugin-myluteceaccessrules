@@ -37,22 +37,22 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import fr.paris.lutece.portal.service.util.AppLogService;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 
-import fr.paris.lutece.plugins.mylutece.service.MyLuteceUserService;
-import fr.paris.lutece.plugins.mylutece.service.MyluteceExternalRoleService;
 import fr.paris.lutece.plugins.myluteceaccessrules.business.Rule;
 import fr.paris.lutece.plugins.myluteceaccessrules.business.RuleHome;
 import fr.paris.lutece.portal.service.security.SecurityService;
-import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.service.util.AppPathService;
 import fr.paris.lutece.util.url.UrlItem;
 
@@ -62,7 +62,9 @@ import fr.paris.lutece.util.url.UrlItem;
 /**
  * This class provides an Access Rules Service
  */
-public final class AccessRulesService
+@ApplicationScoped
+@Named("accessRulesService")
+public class AccessRulesService
 {
     
    
@@ -116,49 +118,23 @@ public final class AccessRulesService
     /** The Constant MARKER_BACK_URL. */
     private static final String MARKER_BACK_URL = "$backurl";
     
-    
-    
-    
-    
-    
-    
-    /** The singleton. */
-    private static AccessRulesService _singleton = null;
-    
+
     /** The cache. */
-    private  AccessRulesCacheService _cache;
-	    
+    @Inject
+    private AccessRulesCacheService _accessRulesCacheService;
 
     /**
-     * Private constructor.
+     * Initializes the service
      */
-    private AccessRulesService(  )
+    @PostConstruct
+    private void init( )
     {
-    }
-
-    /**
-     * Get the unique instance of the AccessRulesService
-     *
-     * @return The instance
-     */
-    public static AccessRulesService getInstance(  )
-    {
-       
-    	if(_singleton==null)
-    	{
-    		
-    		_singleton=new AccessRulesService(  );
-    	    _singleton._cache=new AccessRulesCacheService(  );
-        	_singleton._cache.enableCache(true);
-    	
-    	}
-    	
-    	
-    	return _singleton;
+        _accessRulesCacheService.initCache( );
+        _accessRulesCacheService.enableCache( true );
     }
 
     
-    
+
     /**
      * Checks if is access rules enabled.
      *
@@ -166,7 +142,7 @@ public final class AccessRulesService
      */
     public boolean isAccessRulesEnabled()
     {
-    	return SecurityService.isAuthenticationEnable(  )  && getRulesEnabled().size()>0;
+    	return SecurityService.isAuthenticationEnable(  )  && !getRulesEnabled().isEmpty();
     	
     }
     
@@ -179,7 +155,7 @@ public final class AccessRulesService
     public AccessRulesCacheService  getCache()
     {
     	
-    	return _cache;
+    	return _accessRulesCacheService;
     }
     
     
@@ -191,13 +167,13 @@ public final class AccessRulesService
     public  List<Rule>  getRulesEnabled()
     {
     	
-    	List<Rule> listRulesEnable = (List<Rule>) getCache().getFromCache( CACHE_KEY_LIST_RULES_ENABLED );
+    	List<Rule> listRulesEnable = (List<Rule>) getCache().get( CACHE_KEY_LIST_RULES_ENABLED );
     	
         if ( listRulesEnable == null )
         {
             
-        	listRulesEnable=RuleHome.getRulesList().stream().filter(x->x.getEnable()).collect(Collectors.toList());
-        	getCache().putInCache( CACHE_KEY_LIST_RULES_ENABLED, listRulesEnable.stream().filter(Rule::getEnable).collect(Collectors.toList()) );
+        	listRulesEnable=RuleHome.getRulesList().stream().filter(Rule::getEnable).collect(Collectors.toList());
+        	getCache().put( CACHE_KEY_LIST_RULES_ENABLED, listRulesEnable.stream().filter(Rule::getEnable).collect(Collectors.toList()) );
 
         }
         
@@ -215,7 +191,7 @@ public final class AccessRulesService
       * @param request the request
       * @return the first Rule triggered 
       */
-     public  Rule geFirstRuleTriggered(HttpServletRequest request)
+     public  Rule getFirstRuleTriggered(HttpServletRequest request)
      {
     	 return getRulesEnabled().stream().filter(x-> isRuleMatchingRequest(x, request) && isUserTriggerRule(x, request)).findFirst().orElse(null);
     	 

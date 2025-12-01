@@ -34,16 +34,11 @@
 package fr.paris.lutece.plugins.myluteceaccessrules.business;
 
 import java.io.Serializable;
-import java.util.List;
-
-import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
-import javax.validation.constraints.Size;
-
-
-import org.hibernate.validator.constraints.NotEmpty;
 
 import fr.paris.lutece.util.ReferenceList;
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 
 /**
  * This is the business class for the object Rule.
@@ -56,12 +51,12 @@ public class Rule implements Serializable
     
   
     /** The n id. */
-    // Variables declarations 
+    // Variables declarations
     private int _nId;
     
     /** The str title. */
     @NotEmpty( message = "#i18n{myluteceaccessrules.validation.rule.Title.notEmpty}" )
-    @Size( max = 50 , message = "#i18n{myluteceaccessrules.validation.rule.Title.size}" ) 
+    @Size( max = 50 , message = "#i18n{myluteceaccessrules.validation.rule.Title.size}" )
     private String _strTitle;
     
     /** The str description. */
@@ -108,11 +103,11 @@ public class Rule implements Serializable
 
 	/** The list protected urls. */
 	@Nullable
-    private ReferenceList  _listProtectedUrls;
+    private ReferenceList _listProtectedUrls;
     
     /** The list public urls. */
     @Nullable
-    private ReferenceList  _listPublicUrls;
+    private ReferenceList _listPublicUrls;
 	
 	/** The list roles. */
 	private ReferenceList _listRoles;

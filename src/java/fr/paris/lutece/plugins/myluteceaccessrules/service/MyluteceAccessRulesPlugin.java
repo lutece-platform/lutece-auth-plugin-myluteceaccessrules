@@ -49,8 +49,5 @@ public class MyluteceAccessRulesPlugin extends Plugin
     @Override
     public void init(  )
     {
-     //call get Instance for init singleton	
-    	AccessRulesService.getInstance();
-    	
     }
 }

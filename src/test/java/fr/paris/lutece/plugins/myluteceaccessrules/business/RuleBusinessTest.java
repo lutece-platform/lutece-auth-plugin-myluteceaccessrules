@@ -35,6 +35,7 @@
 package fr.paris.lutece.plugins.myluteceaccessrules.business;
 
 import fr.paris.lutece.test.LuteceTestCase;
+import org.junit.jupiter.api.Test;
 
 
 /**
@@ -58,6 +59,7 @@ public class RuleBusinessTest extends LuteceTestCase
 	/**
 	* test Rule
 	*/
+    @Test
     public void testBusiness(  )
     {
         // Initialize an object

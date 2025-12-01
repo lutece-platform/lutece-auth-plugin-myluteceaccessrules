@@ -34,26 +34,30 @@
 
 package fr.paris.lutece.plugins.myluteceaccessrules.web;
 
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.mock.web.MockServletConfig;
 
-import fr.paris.lutece.plugins.myluteceaccessrules.business.Rule;
 import fr.paris.lutece.plugins.myluteceaccessrules.business.RuleHome;
 import fr.paris.lutece.portal.business.user.AdminUser;
 import fr.paris.lutece.portal.service.admin.AccessDeniedException;
 import fr.paris.lutece.portal.service.admin.AdminAuthenticationService;
+import fr.paris.lutece.portal.service.security.ISecurityTokenService;
 import fr.paris.lutece.portal.service.security.UserNotSignedException;
 import java.util.List;
 import fr.paris.lutece.test.LuteceTestCase;
-import fr.paris.lutece.portal.service.security.SecurityTokenService;
-import fr.paris.lutece.portal.web.LocalVariables;
-import java.io.IOException;
+import fr.paris.lutece.test.mocks.MockHttpServletRequest;
+import fr.paris.lutece.test.mocks.MockHttpServletResponse;
+import fr.paris.lutece.test.mocks.MockServletConfig;
+import jakarta.inject.Inject;
+import org.junit.jupiter.api.Test;
+
 /**
  * This is the business class test for the object Rule
  */
 public class RuleJspBeanTest extends LuteceTestCase
 {
+
+	private @Inject RuleJspBean instance;
+	private @Inject ISecurityTokenService _securityTokenService;
+
     private static final String TITLE1 = "Title1";
     private static final String TITLE2 = "Title2";
     private static final String DESCRIPTION1 = "Description1";
@@ -67,19 +71,19 @@ public class RuleJspBeanTest extends LuteceTestCase
     private static final String REDIRECTURL1 = "Redirecturl1";
     private static final String REDIRECTURL2 = "Redirecturl2";
 
-public void testJspBeans(  ) throws AccessDeniedException
+	@Test
+	public void testJspBeans(  ) throws AccessDeniedException
 	{	
      	MockHttpServletRequest request = new MockHttpServletRequest();
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockServletConfig config = new MockServletConfig();
 
 		//display admin Rule management JSP
-		RuleJspBean jspbean = new RuleJspBean();
-		String html = jspbean.getManageRules( request );
+		String html = instance.getManageRules( request );
 		assertNotNull(html);
 
 		//display admin Rule creation JSP
-		html = jspbean.getCreateRule( request );
+		html = instance.getCreateRule( request );
 		assertNotNull(html);
 
 		//action create Rule
@@ -92,7 +96,7 @@ public void testJspBeans(  ) throws AccessDeniedException
         request.addParameter( "messagetodisplay" , MESSAGETODISPLAY1 );
         request.addParameter( "redirecturl" , REDIRECTURL1 );
 		request.addParameter("action","createRule");
-        request.addParameter( "token", SecurityTokenService.getInstance( ).getToken( request, "createRule" ));
+        request.addParameter( "token", _securityTokenService.getToken( request, "createRule" ));
 		request.setMethod( "POST" );
 		response = new MockHttpServletResponse( );
 		AdminUser adminUser = new AdminUser( );
@@ -101,7 +105,7 @@ public void testJspBeans(  ) throws AccessDeniedException
 		try 
 		{
 			AdminAuthenticationService.getInstance( ).registerUser(request, adminUser);
-			html = jspbean.processController( request, response ); 
+			html = instance.processController( request, response );
 			
 			// MockResponse object does not redirect, result is always null
 			assertNull( html );
@@ -126,9 +130,8 @@ public void testJspBeans(  ) throws AccessDeniedException
 		List<Integer> listIds = RuleHome.getIdRulesList();
         assertTrue( !listIds.isEmpty( ) );
         request.addParameter( "id", String.valueOf( listIds.get( 0 ) ) );
-		jspbean = new RuleJspBean();
 
-		assertNotNull( jspbean.getModifyRule( request ) );
+		assertNotNull( instance.getModifyRule( request ) );
 
 		//action modify Rule
 		request = new MockHttpServletRequest();
@@ -142,14 +145,14 @@ public void testJspBeans(  ) throws AccessDeniedException
 		request.setRequestURI("jsp/admin/plugins/example/ManageRules.jsp");
 		//important pour que MVCController sache quelle action effectuer, sinon, il redirigera vers createRule, qui est l'action par défaut
 		request.addParameter("action","modifyRule");
-		request.addParameter( "token", SecurityTokenService.getInstance( ).getToken( request, "modifyRule" ));
+		request.addParameter( "token", _securityTokenService.getToken( request, "modifyRule" ));
 		adminUser = new AdminUser();
 		adminUser.setAccessCode("admin");
 
 		try 
 		{
 			AdminAuthenticationService.getInstance( ).registerUser(request, adminUser);
-			html = jspbean.processController( request, response ); 
+			html = instance.processController( request, response );
 
 			// MockResponse object does not redirect, result is always null
 			assertNull( html );
@@ -167,9 +170,8 @@ public void testJspBeans(  ) throws AccessDeniedException
 		request = new MockHttpServletRequest();
         //request.setRequestURI("jsp/admin/plugins/example/ManageRules.jsp");
         request.addParameter( "id", String.valueOf( listIds.get( 0 ) ) );
-		jspbean = new RuleJspBean();
 		request.addParameter("action","confirmRemoveRule");
-		assertNotNull( jspbean.getModifyRule( request ) );
+		assertNotNull( instance.getModifyRule( request ) );
 				
 		//do remove Rule
 		request = new MockHttpServletRequest();
@@ -177,7 +179,7 @@ public void testJspBeans(  ) throws AccessDeniedException
 		request.setRequestURI("jsp/admin/plugins/example/ManageRulets.jsp");
 		//important pour que MVCController sache quelle action effectuer, sinon, il redirigera vers createRule, qui est l'action par défaut
 		request.addParameter("action","removeRule");
-		request.addParameter( "token", SecurityTokenService.getInstance( ).getToken( request, "removeRule" ));
+		request.addParameter( "token", _securityTokenService.getToken( request, "removeRule" ));
 		request.addParameter( "id", String.valueOf( listIds.get( 0 ) ) );
 		request.setMethod("POST");
 		adminUser = new AdminUser();
@@ -186,7 +188,7 @@ public void testJspBeans(  ) throws AccessDeniedException
 		try 
 		{
 			AdminAuthenticationService.getInstance( ).registerUser(request, adminUser);
-			html = jspbean.processController( request, response ); 
+			html = instance.processController( request, response );
 
 			// MockResponse object does not redirect, result is always null
 			assertNull( html );

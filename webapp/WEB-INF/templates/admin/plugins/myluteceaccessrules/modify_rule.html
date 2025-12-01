@@ -8,8 +8,6 @@
 		    <@messages errors=errors />
         <input type="hidden" id="id" name="id" value="${rule.id!''}"/>
         <input type="hidden" value="${token}" name="token" />
-
-		
         
 		<@formGroup labelFor='title' labelKey='#i18n{myluteceaccessrules.modify_rule.labelTitle}'helpKey='#i18n{myluteceaccessrules.modify_rule.labelTitle.help}' mandatory=true>
           	<@input type='text' id='title' name='title'  maxlength=50 value='${rule.title!\'\'}' tabIndex='0' />
@@ -49,10 +47,10 @@
 		<@formGroup labelFor='protectedUrls' labelKey='#i18n{myluteceaccessrules.modify_rule.labelProtectedUrls}' >
           	
           	<#if rule.protectedUrls?has_content>
+				<@input type='hidden' name='protected_url_codelist' value='${rule.protectedUrls?map(protectedUrl -> protectedUrl.code)?join(",")}' />
        	   		<#list rule.protectedUrls as protectedUrl>
           			<@input type='text'  name='${protectedUrl.code}'  maxlength=255 value='${protectedUrl.name}' tabIndex='5' />
-					<@aButton href='jsp/admin/plugins/myluteceaccessrules/ManageRules.jsp?protected_url_delete=${protectedUrl.code}&action=removeProtectedUrlModify' title='#i18n{myluteceaccessrules.modify_rule.buttonRemoveProtectedUrl}' buttonIcon='trash' color='danger'/>
-				
+					<@button type='submit' name='action_removeProtectedUrlModify' title='#i18n{myluteceaccessrules.modify_rule.buttonRemoveProtectedUrl}' buttonIcon='trash' color='danger' value='${protectedUrl.code}' />
 				</#list>
 				    
 			</#if>
@@ -65,10 +63,10 @@
 		<@formGroup labelFor='publicUrls' labelKey='#i18n{myluteceaccessrules.modify_rule.labelPublicUrls}' >
           	
           	<#if rule.publicUrls?has_content>
+				<@input type='hidden' name='public_url_codelist' value='${rule.publicUrls?map(publicUrl -> publicUrl.code)?join(",")}' />
        	   		<#list rule.publicUrls as publicUrl>
           			<@input type='text'  name='${publicUrl.code}'  maxlength=255 value='${publicUrl.name}' tabIndex='5' />
-					<@aButton href='jsp/admin/plugins/myluteceaccessrules/ManageRules.jsp?public_url_delete=${publicUrl.code}&action=removePublicUrlModify' title='#i18n{myluteceaccessrules.modify_rule.buttonRemovePublicUrl}' buttonIcon='trash' color='danger'/>
-				
+					<@button type='submit' name='action_removePublicUrlModify' title='#i18n{myluteceaccessrules.modify_rule.buttonRemovePublicUrl}' buttonIcon='trash' color='danger' value='${publicUrl.code}' />
 				</#list>
 				    
 			</#if>

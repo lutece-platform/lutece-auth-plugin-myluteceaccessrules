@@ -38,10 +38,10 @@ import java.util.Collection;
 
 import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
-import javax.servlet.http.HttpServletRequest;
 
 import fr.paris.lutece.portal.service.security.LuteceAuthentication;
 import fr.paris.lutece.portal.service.security.LuteceUser;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  *
