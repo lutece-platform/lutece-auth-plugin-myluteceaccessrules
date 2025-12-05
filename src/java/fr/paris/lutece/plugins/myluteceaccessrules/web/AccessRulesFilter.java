@@ -35,14 +35,15 @@ package fr.paris.lutece.plugins.myluteceaccessrules.web;
 
 import java.io.IOException;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.enterprise.inject.spi.CDI;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -64,13 +65,14 @@ import fr.paris.lutece.portal.service.util.AppPropertiesService;
 public class AccessRulesFilter implements Filter
 {
    
-   
+   private AccessRulesService _accessRulesService;
     /**
      * {@inheritDoc}
      */
     @Override
     public void init( FilterConfig config ) throws ServletException
     {
+        _accessRulesService = CDI.current( ).select( AccessRulesService.class ).get( );
     }
 
     /**
@@ -92,17 +94,17 @@ public class AccessRulesFilter implements Filter
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse resp = (HttpServletResponse) response;
         		
-        if ( AccessRulesService.getInstance().isAccessRulesEnabled()&&  SecurityService.getInstance(  ).getRegisteredUser( req ) !=null && isPrivateUrl( req ) && AccessRulesService.getInstance().geFirstRuleTriggered(req)!=null )
+        if ( _accessRulesService.isAccessRulesEnabled()&&  SecurityService.getInstance(  ).getRegisteredUser( req ) !=null && isPrivateUrl( req ) && _accessRulesService.getFirstRuleTriggered(req)!=null )
         {
            
-        	Rule rule=AccessRulesService.getInstance().geFirstRuleTriggered(req);
+        	Rule rule=_accessRulesService.getFirstRuleTriggered(req);
         	//Logout User if the rule is not verified
         	SecurityService.getInstance().logoutUser(req);
         	 int nbRedirect=!StringUtils.isEmpty(request.getParameter( AccessRulesService.PARAMETER_NB_REDIRECT)) ? Integer.parseInt(req.getParameter( AccessRulesService.PARAMETER_NB_REDIRECT)):0;      
         	      
         	if(nbRedirect < AppPropertiesService.getPropertyInt(AccessRulesService.PROPERTY_MAX_REDIRECT, 10)  && rule.isExternal() && StringUtils.isNotEmpty(rule.getRedirecturl()))
         	{
-        		resp.sendRedirect(  AccessRulesService.getInstance().buildRedirectUrl(rule, req,nbRedirect));
+        		resp.sendRedirect(  _accessRulesService.buildRedirectUrl(rule, req,nbRedirect));
         	}
         	else
         	{
@@ -156,7 +158,7 @@ public class AccessRulesFilter implements Filter
      */
     private boolean isInSiteMessageUrl( HttpServletRequest request )
     {
-        return AccessRulesService.getInstance().matchUrl( request, AppPathService.getSiteMessageUrl( request ) );
+        return _accessRulesService.matchUrl( request, AppPathService.getSiteMessageUrl( request ) );
     }
 
     /**
@@ -176,7 +178,7 @@ public class AccessRulesFilter implements Filter
     	{
 	    	for ( String strPubliUrl : AuthenticationFilterService.getInstance(  ).getPublicUrls(  ) )
 	        {
-	            if (AccessRulesService.getInstance(). matchUrl( request, strPubliUrl ) )
+	            if (_accessRulesService. matchUrl( request, strPubliUrl ) )
 	            {
 	                return true;
 	            }

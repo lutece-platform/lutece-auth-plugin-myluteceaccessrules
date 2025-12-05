@@ -34,15 +34,20 @@
  	
 package fr.paris.lutece.plugins.myluteceaccessrules.web;
 
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
+import fr.paris.lutece.portal.util.mvc.admin.MVCAdminJspBean;
+import fr.paris.lutece.portal.util.mvc.binding.BindingResult;
+import fr.paris.lutece.portal.util.mvc.commons.annotations.ModelAttribute;
+import fr.paris.lutece.portal.web.cdi.mvc.Models;
+import fr.paris.lutece.portal.web.util.IPager;
+import fr.paris.lutece.portal.web.util.Pager;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
 
+import jakarta.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
 
 import fr.paris.lutece.plugins.myluteceaccessrules.business.Rule;
@@ -55,16 +60,16 @@ import fr.paris.lutece.portal.service.security.SecurityTokenService;
 import fr.paris.lutece.portal.util.mvc.admin.annotations.Controller;
 import fr.paris.lutece.portal.util.mvc.commons.annotations.Action;
 import fr.paris.lutece.portal.util.mvc.commons.annotations.View;
-import fr.paris.lutece.util.ReferenceItem;
 import fr.paris.lutece.util.ReferenceList;
 import fr.paris.lutece.util.url.UrlItem;
 
-// TODO: Auto-generated Javadoc
 /**
  * This class provides the user interface to manage Rule features ( manage, create, modify, remove ).
  */
+@RequestScoped
+@Named
 @Controller( controllerJsp = "ManageRules.jsp", controllerPath = "jsp/admin/plugins/myluteceaccessrules/", right = "ACCESSRULES_MANAGEMENT" )
-public class RuleJspBean extends AbstractManageRulesJspBean
+public class RuleJspBean extends MVCAdminJspBean
 {
     
     /** The Constant TEMPLATE_MANAGE_RULES. */
@@ -82,24 +87,29 @@ public class RuleJspBean extends AbstractManageRulesJspBean
     private static final String PARAMETER_ID_RULE = "id";
     
     /** The Constant PARAMETER_PROTECTED_URL. */
+    private static final String PARAMETER_PROTECTED_URL_CODELIST = "protected_url_codelist";
     private static final String PARAMETER_PROTECTED_URL = "protected_url";
     
     /** The Constant PARAMETER_PUBLIC_URL. */
+    private static final String PARAMETER_PUBLIC_URL_CODELIST = "public_url_codelist";
     private static final String PARAMETER_PUBLIC_URL = "public_url";
     
     /** The Constant PREFIX_PARAMETER_ROLE. */
     private static final String PREFIX_PARAMETER_ROLE = "role_";
-    
-    
-    /** The Constant PARAMETER_PROTECTED_URL_DELETE. */
-    private static final String PARAMETER_PROTECTED_URL_DELETE = "protected_url_delete";
-    
-    /** The Constant PARAMETER_PUBLIC_URL_DELETE. */
-    private static final String PARAMETER_PUBLIC_URL_DELETE = "public_url_delete";
-    
-    
 
-    
+    /** Marker **/
+    private static final String MARKER_PROTECTED_URL_TO_REMOVED_CREATE = "action_removeProtectedUrlCreate";
+
+    private static final String MARKER_PUBLIC_URL_TO_REMOVED_CREATE = "action_removePublicUrlCreate";
+
+    private static final String MARKER_PROTECTED_URL_TO_REMOVED_MODIFY = "action_removeProtectedUrlModify";
+
+    private static final String MARKER_PUBLIC_URL_TO_REMOVED_MODIFY = "action_removePublicUrlModify";
+
+
+    // Pager
+    private static final String PROPERTY_DEFAULT_LIST_ITEM_PER_PAGE = "accessrules.listItems.itemsPerPage";
+
     /** The Constant PROPERTY_PAGE_TITLE_MANAGE_RULES. */
     // Properties for page titles
     private static final String PROPERTY_PAGE_TITLE_MANAGE_RULES = "myluteceaccessrules.manage_rules.pageTitle";
@@ -197,8 +207,14 @@ public class RuleJspBean extends AbstractManageRulesJspBean
     private static final String INFO_RULE_REMOVED = "myluteceaccessrules.info.rule.removed";
     
     /** The rule. */
-    // Session variable to store working values
     private Rule _rule;
+
+    @Inject
+    @Pager( listBookmark = MARK_RULE_LIST, defaultItemsPerPage = PROPERTY_DEFAULT_LIST_ITEM_PER_PAGE )
+    private IPager<Rule, Void> _pager;
+
+    @Inject
+    Models model;
     
     /**
      * Build the Manage View.
@@ -211,11 +227,13 @@ public class RuleJspBean extends AbstractManageRulesJspBean
     {
         _rule = null;
         List<Rule> listRules = RuleHome.getRulesList(  );
-        Map<String, Object> model = getPaginatedListModel( request, MARK_RULE_LIST, listRules, JSP_MANAGE_RULES );
 
-        model.put( SecurityTokenService.MARK_TOKEN, SecurityTokenService.getInstance( ).getToken( request, ACTION_INCREASE_PRIORITY ) );
+        _pager.withBaseUrl(getHomeUrl(request))
+                .withListItem(listRules)
+                .populateModels(request, model, getLocale());
 
-        
+        model.put( SecurityTokenService.MARK_TOKEN, getSecurityTokenService().getToken( request, ACTION_INCREASE_PRIORITY ) );
+
         return getPage( PROPERTY_PAGE_TITLE_MANAGE_RULES, TEMPLATE_MANAGE_RULES, model );
     }
 
@@ -229,16 +247,23 @@ public class RuleJspBean extends AbstractManageRulesJspBean
     public String getCreateRule( HttpServletRequest request )
     {
         _rule = ( _rule != null ) ? _rule : new Rule(  );
+        return getCreateRule( request, _rule);
+    }
 
-        Map<String, Object> model = getModel(  );
-        model.put( MARK_RULE, _rule );
-        
+    /**
+     * Returns the form to create a rule.
+     *
+     * @param request The Http request
+     * @param rule the rule
+     * @return the html code of the rule form
+     */
+    public String getCreateRule( HttpServletRequest request, Rule rule )
+    {
+        model.put( MARK_RULE, rule );
         ReferenceList refListRoles=RoleHome.getRolesList(getUser());
-        refListRoles.forEach(x-> x.setChecked(_rule.getRoles()!=null && _rule.getRoles().stream().anyMatch(y->y.getName().equals(x.getCode()))));
+        refListRoles.forEach(x-> x.setChecked(rule.getRoles()!=null && rule.getRoles().stream().anyMatch(y->y.getName().equals(x.getCode()))));
         model.put( MARK_ROLES_LIST, refListRoles);
-        
-        
-        model.put( SecurityTokenService.MARK_TOKEN, SecurityTokenService.getInstance( ).getToken( request, ACTION_CREATE_RULE ) );
+        model.put( SecurityTokenService.MARK_TOKEN, getSecurityTokenService().getToken( request, ACTION_CREATE_RULE ) );
 
         return getPage( PROPERTY_PAGE_TITLE_CREATE_RULE, TEMPLATE_CREATE_RULE, model );
     }
@@ -246,28 +271,30 @@ public class RuleJspBean extends AbstractManageRulesJspBean
     /**
      * Process the data capture form of a new rule.
      *
+     * @param rule the rule
+     * @param bindingResult the bindingResult
      * @param request The Http Request
      * @return The Jsp URL of the process result
      * @throws AccessDeniedException the access denied exception
      */
     @Action( ACTION_CREATE_RULE )
-    public String doCreateRule( HttpServletRequest request ) throws AccessDeniedException
+    public String doCreateRule(@Valid @ModelAttribute Rule rule,
+                               BindingResult bindingResult,
+                               HttpServletRequest request ) throws AccessDeniedException
     {
-        populate( _rule, request, getLocale( ) );
-        populateRoles(request);
+        populateRule(request, rule);
 
-        if ( !SecurityTokenService.getInstance( ).validate( request, ACTION_CREATE_RULE ) )
+        if ( !getSecurityTokenService( ).validate( request, ACTION_CREATE_RULE ) )
         {
             throw new AccessDeniedException ( "Invalid security token" );
         }
 
-        // Check constraints
-        if ( !validateBean( _rule, VALIDATION_ATTRIBUTES_PREFIX ) )
+        if( bindingResult.isFailed() )
         {
             return redirectView( request, VIEW_CREATE_RULE );
         }
 
-        RuleHome.create( _rule );
+        RuleHome.create( rule );
         
         
         addInfo( INFO_RULE_CREATED, getLocale(  ) );
@@ -279,155 +306,159 @@ public class RuleJspBean extends AbstractManageRulesJspBean
     /**
      * Process the data capture form of a new rule.
      *
+     * @param rule the rule
      * @param request The Http Request
      * @return The Jsp URL of the process result
      * @throws AccessDeniedException the access denied exception
      */
     @Action( ACTION_ADD_PROTECTED_URL_CREATE )
-    public String doAddProtectedUrlCreate( HttpServletRequest request ) throws AccessDeniedException
+    public String doAddProtectedUrlCreate( @Valid @ModelAttribute Rule rule,
+                                           HttpServletRequest request ) throws AccessDeniedException
     {
-     
-    	populate( _rule, request, getLocale( ) );
-        populateRoles(request);
-        
-    	populateProtectedUrls(request);
-    	
-    
-    	 return redirectView( request, VIEW_CREATE_RULE );
+        populateRule(request, rule);
+
+        addProtectedUrl(request, rule);
+
+        return getCreateRule(request, rule);
     }
     
     /**
      * Process the data capture form of a new rule.
      *
+     * @param rule the rule
      * @param request The Http Request
      * @return The Jsp URL of the process result
      * @throws AccessDeniedException the access denied exception
      */
     @Action( ACTION_ADD_PROTECTED_URL_MODIFY)
-    public String doAddProtectedUrlModify( HttpServletRequest request ) throws AccessDeniedException
+    public String doAddProtectedUrlModify( @Valid @ModelAttribute Rule rule,
+                                           HttpServletRequest request ) throws AccessDeniedException
     {
-     
-    	populate( _rule, request, getLocale( ) );
-        populateRoles(request);
-        
-    	populateProtectedUrls(request);
-    	
-    
-    	return redirect( request, VIEW_MODIFY_RULE, PARAMETER_ID_RULE, _rule.getId( ) );
+        populateRule(request, rule);
+
+        addProtectedUrl(request, rule);
+
+        return getModifyRule( request, rule );
     }
     
     
     /**
      * Process the data capture form of a new rule.
      *
+     * @param rule the rule
      * @param request The Http Request
      * @return The Jsp URL of the process result
      * @throws AccessDeniedException the access denied exception
      */
     @Action( ACTION_ADD_PUBLIC_URL_CREATE )
-    public String doAddPublicUrlCreate( HttpServletRequest request ) throws AccessDeniedException
+    public String doAddPublicUrlCreate( @Valid @ModelAttribute Rule rule,
+                                        HttpServletRequest request ) throws AccessDeniedException
     {
-     
-    	populate( _rule, request, getLocale( ) );
-        populateRoles(request);
-        
-    	populatePublicUrls(request);
-    	
-    
-    	 return redirectView( request, VIEW_CREATE_RULE );
+        populateRule(request, rule);
+
+        addPublicUrl(request, rule);
+
+        return getCreateRule(request, rule);
     }
     
     /**
      * Process the data capture form of a new rule.
      *
+     * @param rule the rule
      * @param request The Http Request
      * @return The Jsp URL of the process result
      * @throws AccessDeniedException the access denied exception
      */
     @Action( ACTION_ADD_PUBLIC_URL_MODIFY)
-    public String doAddPublicUrlModify( HttpServletRequest request ) throws AccessDeniedException
+    public String doAddPublicUrlModify( @Valid @ModelAttribute Rule rule,
+                                        HttpServletRequest request ) throws AccessDeniedException
     {
-     
-    	populate( _rule, request, getLocale( ) );
-        populateRoles(request);
-        
-    	populatePublicUrls(request);
-    	
-    
-    	return redirect( request, VIEW_MODIFY_RULE, PARAMETER_ID_RULE, _rule.getId( ) );
+        populateRule(request, rule);
+
+        addPublicUrl(request, rule);
+
+        return getModifyRule(request, rule);
     }
 
     
     /**
      * Process the data capture form of a new rule.
      *
+     * @param rule the rule
      * @param request The Http Request
      * @return The Jsp URL of the process result
      * @throws AccessDeniedException the access denied exception
      */
     @Action( ACTION_REMOVE_PROTECTED_URL_CREATE )
-    public String doRemoveProtectedUrlCreate( HttpServletRequest request ) throws AccessDeniedException
+    public String doRemoveProtectedUrlCreate( @Valid @ModelAttribute Rule rule,
+                                              HttpServletRequest request ) throws AccessDeniedException
     {
-     
-    	String strProtectedUrlDelete=request.getParameter(PARAMETER_PROTECTED_URL_DELETE);
-    	
-    	_rule.getProtectedUrls().removeIf(x-> x.getCode().equals(strProtectedUrlDelete));
-    
-    	 return redirectView( request, VIEW_CREATE_RULE );
+        populateRule(request, rule);
+
+    	String strProtectedUrlDelete=request.getParameter(MARKER_PROTECTED_URL_TO_REMOVED_CREATE);
+        rule.getProtectedUrls().removeIf(x-> x.getCode().equals(strProtectedUrlDelete));
+
+        return getCreateRule( request, rule );
     }
     
     /**
      * Process the data capture form of a new rule.
      *
+     * @param rule the rule
      * @param request The Http Request
      * @return The Jsp URL of the process result
      * @throws AccessDeniedException the access denied exception
      */
     @Action( ACTION_REMOVE_PROTECTED_URL_MODIFY)
-    public String doRemoveProtectedUrlModify( HttpServletRequest request ) throws AccessDeniedException
+    public String doRemoveProtectedUrlModify( @Valid @ModelAttribute Rule rule,
+                                              HttpServletRequest request ) throws AccessDeniedException
     {
-     
-    	String strProtectedUrlDelete=request.getParameter(PARAMETER_PROTECTED_URL_DELETE);
-    	
-    	_rule.getProtectedUrls().removeIf(x-> x.getCode().equals(strProtectedUrlDelete));
+        populateRule(request, rule);
+
+    	String strProtectedUrlDelete=request.getParameter(MARKER_PROTECTED_URL_TO_REMOVED_MODIFY);
+        rule.getProtectedUrls().removeIf(x-> x.getCode().equals(strProtectedUrlDelete));
     
-    	return redirect( request, VIEW_MODIFY_RULE, PARAMETER_ID_RULE, _rule.getId( ) );
+    	return getModifyRule(request, rule);
     }
     
     /**
      * Process the data capture form of a new rule.
      *
+     * @param rule the rule
      * @param request The Http Request
      * @return The Jsp URL of the process result
      * @throws AccessDeniedException the access denied exception
      */
     @Action( ACTION_REMOVE_PUBLIC_URL_CREATE )
-    public String doRemovePublicUrlCreate( HttpServletRequest request ) throws AccessDeniedException
+    public String doRemovePublicUrlCreate( @Valid @ModelAttribute Rule rule,
+                                           HttpServletRequest request ) throws AccessDeniedException
     {
-     
-    	String strPublicdUrlDelete=request.getParameter(PARAMETER_PUBLIC_URL_DELETE);
-    	
-    	_rule.getPublicUrls().removeIf(x-> x.getCode().equals(strPublicdUrlDelete));
+        populateRule(request, rule);
+
+        String strPublicdUrlDelete=request.getParameter(MARKER_PUBLIC_URL_TO_REMOVED_CREATE);
+        rule.getPublicUrls().removeIf(x-> x.getCode().equals(strPublicdUrlDelete));
     
-    	 return redirectView( request, VIEW_CREATE_RULE );
+        return getCreateRule(request, rule);
     }
     
     /**
      * Process the data capture form of a new rule.
      *
+     * @param rule the rule
      * @param request The Http Request
      * @return The Jsp URL of the process result
      * @throws AccessDeniedException the access denied exception
      */
     @Action( ACTION_REMOVE_PUBLIC_URL_MODIFY)
-    public String doRemovePublicUrlModify( HttpServletRequest request ) throws AccessDeniedException
+    public String doRemovePublicUrlModify( @Valid @ModelAttribute Rule rule,
+                                           HttpServletRequest request ) throws AccessDeniedException
     {
-     
-    	String strPublicdUrlDelete=request.getParameter(PARAMETER_PUBLIC_URL_DELETE);
-    	
-    	_rule.getPublicUrls().removeIf(x-> x.getCode().equals(strPublicdUrlDelete));
+        populateRule(request, rule);
+
+    	String strPublicdUrlDelete=request.getParameter(MARKER_PUBLIC_URL_TO_REMOVED_MODIFY);
+        rule.getPublicUrls().removeIf(x-> x.getCode().equals(strPublicdUrlDelete));
     
-    	return redirect( request, VIEW_MODIFY_RULE, PARAMETER_ID_RULE, _rule.getId( ) );
+    	return getModifyRule(request, rule);
     }
 
 
@@ -483,14 +514,24 @@ public class RuleJspBean extends AbstractManageRulesJspBean
         {
             _rule = RuleHome.findByPrimaryKey( nId );
         }
+        return getModifyRule( request, _rule);
+    }
 
-        Map<String, Object> model = getModel(  );
-        model.put( MARK_RULE, _rule );
+    /**
+     * Returns the form to update info about for a rule.
+     *
+     * @param request The Http request
+     * @param rule the Rule
+     * @return The HTML form to update info
+     */
+    private String getModifyRule( HttpServletRequest request, Rule rule )
+    {
+        model.put( MARK_RULE, rule );
         ReferenceList refListRoles=RoleHome.getRolesList(getUser());
-        refListRoles.forEach(x-> x.setChecked(_rule.getRoles()!=null && _rule.getRoles().stream().anyMatch(y->y.getName().equals(x.getCode()))));
+        refListRoles.forEach(x-> x.setChecked(rule.getRoles()!=null && rule.getRoles().stream().anyMatch(y->y.getName().equals(x.getCode()))));
         model.put( MARK_ROLES_LIST, refListRoles);
-        
-        model.put( SecurityTokenService.MARK_TOKEN, SecurityTokenService.getInstance( ).getToken( request, ACTION_MODIFY_RULE ) );
+
+        model.put( SecurityTokenService.MARK_TOKEN, getSecurityTokenService().getToken( request, ACTION_MODIFY_RULE ) );
 
         return getPage( PROPERTY_PAGE_TITLE_MODIFY_RULE, TEMPLATE_MODIFY_RULE, model );
     }
@@ -503,23 +544,24 @@ public class RuleJspBean extends AbstractManageRulesJspBean
      * @throws AccessDeniedException the access denied exception
      */
     @Action( ACTION_MODIFY_RULE )
-    public String doModifyRule( HttpServletRequest request ) throws AccessDeniedException
+    public String doModifyRule( @Valid @ModelAttribute Rule rule,
+                                BindingResult bindingResult,
+                                HttpServletRequest request ) throws AccessDeniedException
     {
-        populate( _rule, request, getLocale( ) );
-        populateRoles(request);
+        populateRule(request, rule);
         
-        if ( !SecurityTokenService.getInstance( ).validate( request, ACTION_MODIFY_RULE ) )
+        if ( !getSecurityTokenService().validate( request, ACTION_MODIFY_RULE ) )
         {
             throw new AccessDeniedException ( "Invalid security token" );
         }
 
         // Check constraints
-        if ( !validateBean( _rule, VALIDATION_ATTRIBUTES_PREFIX ) )
+        if ( bindingResult.isFailed() )
         {
             return redirect( request, VIEW_MODIFY_RULE, PARAMETER_ID_RULE, _rule.getId( ) );
         }
 
-        RuleHome.update( _rule );
+        RuleHome.update( rule );
         addInfo( INFO_RULE_UPDATED, getLocale(  ) );
 
         return redirectView( request, VIEW_MANAGE_RULES );
@@ -538,7 +580,7 @@ public class RuleJspBean extends AbstractManageRulesJspBean
       
     	int nId = Integer.parseInt( request.getParameter( PARAMETER_ID_RULE ) );
     	 
-        if ( !SecurityTokenService.getInstance( ).validate( request, ACTION_INCREASE_PRIORITY ) )
+        if ( !getSecurityTokenService().validate( request, ACTION_INCREASE_PRIORITY ) )
         {
             throw new AccessDeniedException ( "Invalid security token" );
         }
@@ -582,7 +624,7 @@ public class RuleJspBean extends AbstractManageRulesJspBean
       
     	int nId = Integer.parseInt( request.getParameter( PARAMETER_ID_RULE ) );
     	 
-        if ( !SecurityTokenService.getInstance( ).validate( request, ACTION_INCREASE_PRIORITY ) )
+        if ( !getSecurityTokenService().validate( request, ACTION_INCREASE_PRIORITY ) )
         {
             throw new AccessDeniedException ( "Invalid security token" );
         }
@@ -624,57 +666,101 @@ public class RuleJspBean extends AbstractManageRulesJspBean
      * Populate protected urls.
      *
      * @param request the request
+     * @param rule the Rule
      */
-    private void populateProtectedUrls(HttpServletRequest request )
+    private void populateProtectedUrls(HttpServletRequest request, Rule rule)
     {
     	
-    	if(_rule.getProtectedUrls() ==null)
+    	if(rule.getProtectedUrls() ==null)
     	{
-    		_rule.setProtectedUrls(new ReferenceList());	
+            rule.setProtectedUrls(new ReferenceList());
     	}
-    	
-    	_rule.getProtectedUrls().forEach(x-> x.setName( request.getParameter(x.getCode())));
-    	if(StringUtils.isNotEmpty(request.getParameter(PARAMETER_PROTECTED_URL)))
-    	{
-    		_rule.getProtectedUrls().addItem(RuleHome.RULE_PROTECTED_URL_PREFIX+_rule.getId()+"_"+_rule.getProtectedUrls().size()+1, request.getParameter(PARAMETER_PROTECTED_URL));
-    	}
-    	
+
+        String codelist = request.getParameter(PARAMETER_PROTECTED_URL_CODELIST);
+        if( StringUtils.isNotEmpty(codelist) )
+        {
+            String[] protectedCodeList = codelist.split(",");
+            for (String code : protectedCodeList) {
+                rule.getProtectedUrls().addItem(code, request.getParameter(code));
+            }
+        }
     }
-    
-    
-    
+
+    /**
+     * add one protected Url
+     *
+     * @param request the request
+     * @param rule the Rule
+     */
+    private void addProtectedUrl(HttpServletRequest request, Rule rule)
+    {
+        if(StringUtils.isNotEmpty(request.getParameter(PARAMETER_PROTECTED_URL)))
+        {
+            rule.getProtectedUrls().addItem(RuleHome.RULE_PROTECTED_URL_PREFIX+rule.getId()+"_"+rule.getProtectedUrls().size()+1, request.getParameter(PARAMETER_PROTECTED_URL));
+        }
+    }
+
     /**
      * Populate public urls.
      *
      * @param request the request
+     * @param rule the Rule
      */
-    private void populatePublicUrls(HttpServletRequest request )
+    private void populatePublicUrls(HttpServletRequest request, Rule rule )
     {
-    	
-    	if(_rule.getPublicUrls() ==null)
+    	if(rule.getPublicUrls() ==null)
     	{
-    		_rule.setPublicUrls(new ReferenceList());	
+            rule.setPublicUrls(new ReferenceList());
     	}
-    	
-    	_rule.getPublicUrls().forEach(x-> x.setName( request.getParameter(x.getCode())));
-    	if(StringUtils.isNotEmpty(request.getParameter(PARAMETER_PUBLIC_URL)))
-    	{
-    		_rule.getPublicUrls().addItem(RuleHome.RULE_PUBLIC_URL_PREFIX+_rule.getId()+"_"+_rule.getPublicUrls().size()+1, request.getParameter(PARAMETER_PUBLIC_URL));
-    	}
-    	
+
+        String codelist = request.getParameter(PARAMETER_PUBLIC_URL_CODELIST);
+        if( StringUtils.isNotEmpty(codelist) )
+        {
+            String[] publicCodeList = codelist.split(",");
+            for (String code : publicCodeList) {
+                rule.getPublicUrls().addItem(code, request.getParameter(code));
+            }
+        }
+    }
+
+    /**
+     * add one public Url
+     *
+     * @param request the request
+     * @param rule the Rule
+     */
+    private void addPublicUrl(HttpServletRequest request, Rule rule)
+    {
+        if(StringUtils.isNotEmpty(request.getParameter(PARAMETER_PUBLIC_URL)))
+        {
+            rule.getPublicUrls().addItem(RuleHome.RULE_PUBLIC_URL_PREFIX+rule.getId()+"_"+rule.getPublicUrls().size()+1, request.getParameter(PARAMETER_PUBLIC_URL));
+        }
     }
     
     /**
      * Populate roles.
      *
      * @param request the request
+     * @param rule the Rule
      */
-    private void populateRoles(HttpServletRequest request )
+    private void populateRoles(HttpServletRequest request, Rule rule )
     {
-    	
-    	_rule.setRoles(new ReferenceList());	
-     	RoleHome.getRolesList(getUser()).stream().filter(x->request.getParameter(PREFIX_PARAMETER_ROLE+x.getCode())!=null).forEach(x->_rule.getRoles().addItem(x.getCode(), x.getCode()));
-    	
-    	
+
+        rule.setRoles(new ReferenceList());
+        RoleHome.getRolesList(getUser()).stream().filter(x->request.getParameter(PREFIX_PARAMETER_ROLE+x.getCode())!=null).forEach(x->rule.getRoles().addItem(x.getCode(), x.getCode()));
+
+    }
+
+    /**
+     * Populate roles, Protected and public Urls
+     *
+     * @param request the request
+     * @param rule The Rule
+     */
+    private void populateRule( HttpServletRequest request, Rule rule )
+    {
+        populateRoles( request, rule );
+        populateProtectedUrls( request, rule );
+        populatePublicUrls( request, rule );
     }
 }

@@ -7,7 +7,7 @@ ${rule.external?then('show','')}
     <@tform name='create_rule' action='jsp/admin/plugins/myluteceaccessrules/ManageRules.jsp'>
 
         <@messages errors=errors />
-        <input type="hidden" id="id" name="id"/>
+        <input type="hidden" id="id" name="id" value="0"/>
         <input type="hidden" value="${token}" name="token" />
 
 		<@formGroup labelFor='title' labelKey='#i18n{myluteceaccessrules.modify_rule.labelTitle}'helpKey='#i18n{myluteceaccessrules.modify_rule.labelTitle.help}' mandatory=true>
@@ -47,10 +47,10 @@ ${rule.external?then('show','')}
 		<@formGroup labelFor='protectedUrls' labelKey='#i18n{myluteceaccessrules.modify_rule.labelProtectedUrls}' >
           	
           	<#if rule.protectedUrls?has_content>
+				<@input type='hidden' name='protected_url_codelist' value='${rule.protectedUrls?map(protectedUrl -> protectedUrl.code)?join(",")}' />
        	   		<#list rule.protectedUrls as protectedUrl>
           			<@input type='text'  name='${protectedUrl.code}'  maxlength=255 value='${protectedUrl.name}' tabIndex='5' />
-					<@aButton href='jsp/admin/plugins/myluteceaccessrules/ManageRules.jsp?protected_url_delete=${protectedUrl.code}&action=removeProtectedUrlCreate' title='#i18n{myluteceaccessrules.modify_rule.buttonRemoveProtectedUrl}' buttonIcon='trash' color='danger'/>
-				
+					<@button type='submit' name='action_removeProtectedUrlCreate' title='#i18n{myluteceaccessrules.modify_rule.buttonRemoveProtectedUrl}' buttonIcon='trash' color='danger' value='${protectedUrl.code}' />
 				</#list>
 				    
 			</#if>
@@ -63,10 +63,10 @@ ${rule.external?then('show','')}
 		<@formGroup labelFor='publicUrls' labelKey='#i18n{myluteceaccessrules.modify_rule.labelPublicUrls}' >
           	
           	<#if rule.publicUrls?has_content>
+				<@input type='hidden' name='public_url_codelist' value='${rule.publicUrls?map(publicUrl -> publicUrl.code)?join(",")}' />
        	   		<#list rule.publicUrls as publicUrl>
           			<@input type='text'  name='${publicUrl.code}'  maxlength=255 value='${publicUrl.name}' tabIndex='5' />
-					<@aButton href='jsp/admin/plugins/myluteceaccessrules/ManageRules.jsp?public_url_delete=${publicUrl.code}&action=removePublicUrlCreate' title='#i18n{myluteceaccessrules.modify_rule.buttonRemovePublicUrl}' buttonIcon='trash' color='danger'/>
-				
+					<@button type='submit' name='action_removePublicUrlCreate' title='#i18n{myluteceaccessrules.modify_rule.buttonRemovePublicUrl}' buttonIcon='trash' color='danger' value='${publicUrl.code}' />
 				</#list>
 				    
 			</#if>

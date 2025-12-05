@@ -41,16 +41,20 @@ import fr.paris.lutece.plugins.myluteceaccessrules.service.AccessRulesService;
 import fr.paris.lutece.portal.service.datastore.DatastoreService;
 import fr.paris.lutece.portal.service.plugin.Plugin;
 import fr.paris.lutece.portal.service.plugin.PluginService;
-import fr.paris.lutece.portal.service.spring.SpringContextService;
 import fr.paris.lutece.util.ReferenceList;
+import jakarta.enterprise.inject.spi.CDI;
 
 /**
  * This class provides instances management methods (create, find, ...) for Rule objects
  */
 public final class RuleHome
 {
+
+    private static AccessRulesService _accessRulesService = CDI.current( ).select( AccessRulesService.class ).get( );
+
     // Static variable pointed at the DAO instance
-    private static IRuleDAO _dao = SpringContextService.getBean( "myluteceaccessrules.ruleDAO" );
+    private static IRuleDAO _dao = CDI.current( ).select( IRuleDAO.class ).get( );
+
     private static Plugin _plugin = PluginService.getPlugin( "accessrules" );
     public  static final String RULE_PROTECTED_URL_PREFIX="rule_protected_urls_";
     public  static final String RULE_ROLES_PREFIX="rule_roles_";
@@ -79,8 +83,8 @@ public final class RuleHome
        List<Rule> ruleList=RuleHome.getRulesList();
        ruleList.add(rule);
        RuleHome.updateRulesPriorities(ruleList);
-        
-        AccessRulesService.getInstance().getCache().resetCache();
+
+        _accessRulesService.getCache().resetCache();
        
         
         
@@ -99,8 +103,8 @@ public final class RuleHome
         _dao.store( rule, _plugin );
         updateRuleUrls(rule);
         updateRuleRoles(rule);
-        
-        AccessRulesService.getInstance().getCache().resetCache();
+
+        _accessRulesService.getCache().resetCache();
         
         
         return rule;
@@ -118,8 +122,8 @@ public final class RuleHome
         DatastoreService.removeDataByPrefix(RULE_PROTECTED_URL_PREFIX+nKey);
         DatastoreService.removeDataByPrefix(RULE_PUBLIC_URL_PREFIX+nKey);
         DatastoreService.removeDataByPrefix(RULE_ROLES_PREFIX+nKey);
-        
-        AccessRulesService.getInstance().getCache().resetCache();           
+
+        _accessRulesService.getCache().resetCache();
         
     }
 
@@ -131,9 +135,12 @@ public final class RuleHome
     public static Rule findByPrimaryKey( int nKey )
     {
         Rule rule=_dao.load( nKey, _plugin );
-        setRuleUrls(rule);
-        setRuleRoles(rule);
-        
+        if (rule !=null)
+        {
+            setRuleUrls(rule);
+            setRuleRoles(rule);
+        }
+
         return rule;
     }
 
@@ -177,7 +184,7 @@ public final class RuleHome
 	  */
 	 public static void updateRulesPriorities(List<Rule> listRules) {
  	   //reset cache after updating rules priorities 
- 		AccessRulesService.getInstance().getCache().resetCache(); 
+         _accessRulesService.getCache().resetCache();
  		if (listRules != null) {
  			
  			List<Rule> listRulesSorted= listRules.stream().sorted(Comparator.comparingInt(Rule::getPriorityOrder).reversed())

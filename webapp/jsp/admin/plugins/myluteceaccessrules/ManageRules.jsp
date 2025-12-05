@@ -1,9 +1,9 @@
-<jsp:useBean id="managerulesRule" scope="session" class="fr.paris.lutece.plugins.myluteceaccessrules.web.RuleJspBean" />
-<% String strContent = managerulesRule.processController ( request , response ); %>
-
 <%@ page errorPage="../../ErrorPage.jsp" %>
+
+${ pageContext.setAttribute( 'strContent', ruleJspBean.processController( pageContext.request , pageContext.response ) ) }
+
 <jsp:include page="../../AdminHeader.jsp" />
 
-<%= strContent %>
+${ pageContext.getAttribute( 'strContent' ) }
 
 <%@ include file="../../AdminFooter.jsp" %>
