@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><plug-in>
     <name>myluteceaccessrules</name>
     <class>fr.paris.lutece.plugins.myluteceaccessrules.service.MyluteceAccessRulesPlugin</class>
-    <version>2.0.0</version>
+    <version>2.0.1-SNAPSHOT</version>
     <documentation/>
     <installation/>
     <changes/>
