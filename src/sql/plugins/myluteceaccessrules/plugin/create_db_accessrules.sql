@@ -1,5 +1,5 @@
 -- liquibase formatted sql
--- changeset myluteceaccessrules:create_db_accessrules.sql
+-- changeset myluteceaccessrules:create_db_accessrules.sql logicalFilePath:sql/plugins/accessrules/plugin/create_db_accessrules.sql
 -- preconditions onFail:MARK_RAN onError:WARN
 
 --
