@@ -1,6 +1,11 @@
 -- liquibase formatted sql
+--
+-- Precondition : the rules table does not exist yet. The query fails while it exists (MARK_RAN : no DROP
+-- TABLE on an installed plugin) and errors when it does not (WARN : the changeset runs).
+--
 -- changeset myluteceaccessrules:create_db_accessrules.sql logicalFilePath:sql/plugins/accessrules/plugin/create_db_accessrules.sql
 -- preconditions onFail:MARK_RAN onError:WARN
+-- precondition-sql-check expectedResult:1 SELECT COUNT(*) FROM mylutece_accessrules_rule WHERE 1 = 0
 
 --
 -- Structure for table mylutece_accessrules_rule
