@@ -1,6 +1,11 @@
 -- liquibase formatted sql
+--
+-- Precondition : the admin right of the plugin does not exist yet, so that an installed plugin is not
+-- initialised again (its datastore key is inserted without DELETE).
+--
 -- changeset myluteceaccessrules:init_core_accessrules.sql logicalFilePath:sql/plugins/accessrules/core/init_core_accessrules.sql
 -- preconditions onFail:MARK_RAN onError:WARN
+-- precondition-sql-check expectedResult:0 SELECT COUNT(*) FROM core_admin_right WHERE id_right = 'ACCESSRULES_MANAGEMENT'
 
 --
 -- Data for table core_admin_right
