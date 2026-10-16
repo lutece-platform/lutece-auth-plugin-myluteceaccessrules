@@ -19,8 +19,7 @@ public class AccessRulesCacheService extends AbstractCacheableService<String, Li
 
     public void init( )
     {
-        initCache( );
-        enableCache( true );
+        initCache( getName( ), true );
     }
 
     /**

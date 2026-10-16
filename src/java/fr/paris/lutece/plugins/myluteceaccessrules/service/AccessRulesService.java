@@ -129,8 +129,8 @@ public class AccessRulesService
     @PostConstruct
     private void init( )
     {
-        _accessRulesCacheService.initCache( );
-        _accessRulesCacheService.enableCache( true );
+        // Enabled by default: a status chosen in the back office is kept across restarts (enableCache would overwrite it)
+        _accessRulesCacheService.initCache( _accessRulesCacheService.getName( ), true );
     }
 
     
