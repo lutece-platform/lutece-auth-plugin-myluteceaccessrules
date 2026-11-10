@@ -13,7 +13,7 @@
     <artifactId>plugin-myluteceaccessrules</artifactId>
     <packaging>lutece-plugin</packaging>
     
-    <version>1.0.4-beta-02</version>
+    <version>1.0.4-SNAPSHOT</version>
     <name>Lutece Mylutece  accessrules plugin</name>
 
     <repositories>
