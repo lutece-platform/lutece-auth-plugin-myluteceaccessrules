@@ -115,9 +115,9 @@ public final class RuleHome
         _dao.delete( nKey, _plugin );
 
         
-        DatastoreService.removeDataByPrefix(RULE_PROTECTED_URL_PREFIX+nKey);
-        DatastoreService.removeDataByPrefix(RULE_PUBLIC_URL_PREFIX+nKey);
-        DatastoreService.removeDataByPrefix(RULE_ROLES_PREFIX+nKey);
+        DatastoreService.removeInstanceDataByPrefix( RULE_PROTECTED_URL_PREFIX + nKey + "_" );
+        DatastoreService.removeInstanceDataByPrefix( RULE_PUBLIC_URL_PREFIX + nKey + "_" );
+        DatastoreService.removeInstanceDataByPrefix( RULE_ROLES_PREFIX + nKey + "_" );
         
         AccessRulesService.getInstance().getCache().resetCache();           
         
@@ -131,8 +131,11 @@ public final class RuleHome
     public static Rule findByPrimaryKey( int nKey )
     {
         Rule rule=_dao.load( nKey, _plugin );
-        setRuleUrls(rule);
-        setRuleRoles(rule);
+        if ( rule != null )
+        {
+            setRuleUrls(rule);
+            setRuleRoles(rule);
+        }
         
         return rule;
     }
@@ -198,8 +201,8 @@ public final class RuleHome
     private static void updateRuleUrls(Rule rule)
     {
     	  int[] idx = { 0 };
-    	 DatastoreService.removeDataByPrefix(RULE_PROTECTED_URL_PREFIX+rule.getId());
-         DatastoreService.removeDataByPrefix(RULE_PUBLIC_URL_PREFIX+rule.getId());
+    	 DatastoreService.removeInstanceDataByPrefix( RULE_PROTECTED_URL_PREFIX + rule.getId() + "_" );
+         DatastoreService.removeInstanceDataByPrefix( RULE_PUBLIC_URL_PREFIX + rule.getId() + "_" );
          
          if( rule.getProtectedUrls()!=null )
          {
@@ -220,7 +223,7 @@ public final class RuleHome
     private static void updateRuleRoles(Rule rule)
     {
     	  int[] idx = { 0 };
-    	 DatastoreService.removeDataByPrefix(RULE_ROLES_PREFIX+rule.getId());
+    	 DatastoreService.removeInstanceDataByPrefix( RULE_ROLES_PREFIX + rule.getId() + "_" );
      
          
          if( rule.getRoles() !=null )
@@ -237,8 +240,8 @@ public final class RuleHome
     private static void setRuleUrls(Rule rule)
     {
 
-        rule.setProtectedUrls(DatastoreService.getDataByPrefix( RULE_PROTECTED_URL_PREFIX+rule.getId() ));
-        rule.setPublicUrls(DatastoreService.getDataByPrefix( RULE_PUBLIC_URL_PREFIX+rule.getId() ));	
+        rule.setProtectedUrls(DatastoreService.getInstanceDataByPrefix( RULE_PROTECTED_URL_PREFIX + rule.getId( ) + "_" ));
+        rule.setPublicUrls(DatastoreService.getInstanceDataByPrefix( RULE_PUBLIC_URL_PREFIX + rule.getId( ) + "_" ));	
     	
     
     }
@@ -246,7 +249,7 @@ public final class RuleHome
     private static void setRuleRoles(Rule rule)
     {
 
-          rule.setRoles(DatastoreService.getDataByPrefix( RULE_ROLES_PREFIX+rule.getId() ));	
+          rule.setRoles(DatastoreService.getInstanceDataByPrefix( RULE_ROLES_PREFIX + rule.getId( ) + "_" ));	
     	
     
     }

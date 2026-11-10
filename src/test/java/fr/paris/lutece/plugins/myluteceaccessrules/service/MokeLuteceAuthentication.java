@@ -91,7 +91,7 @@ public class MokeLuteceAuthentication implements LuteceAuthentication
 
     public boolean isUserInRole( LuteceUser user, HttpServletRequest request, String strRole )
     {
-        return Arrays.asList( user.getRoles( ) ).contains( strRole );
+        return user.getRoles( ) != null && Arrays.asList( user.getRoles( ) ).contains( strRole );
     }
 
     public String [ ] getRolesByUser( LuteceUser user )

@@ -1,5 +1,6 @@
 package fr.paris.lutece.plugins.myluteceaccessrules.service;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 import javax.servlet.http.HttpServletRequest;
@@ -115,6 +116,7 @@ public class AccessRulesServiceTest extends LuteceTestCase{
 	  internalRule.setProtectedUrls(refListProtectedUrls);
 	  ReferenceList refListPublicUrls= new ReferenceList();
 	  refListPublicUrls.addItem("test","jsp/site/Portal.jsp?page=test&view=all");
+	  internalRule.setPublicUrls(refListPublicUrls);
 	  
 	  ReferenceList listRoles = new ReferenceList();
       listRoles.addItem(ROLE1, ROLE1);
@@ -133,6 +135,7 @@ public class AccessRulesServiceTest extends LuteceTestCase{
 	  SecurityService securityService = SecurityService.getInstance( );
       MokeLuteceAuthentication mockLuteceAuthentication = new MokeLuteceAuthentication( );  
       ReflectionTestUtils.setField( securityService, "_authenticationService", mockLuteceAuthentication );
+      setAuthenticationEnabled( true );
       
       MokeLuteceUser user = new MokeLuteceUser( NAME, mockLuteceAuthentication );
       user.setName( NAME );
@@ -148,9 +151,29 @@ public class AccessRulesServiceTest extends LuteceTestCase{
   @Override
   public void tearDown( ) throws Exception
   {
-	  super.tearDown();
 	  RuleHome.getRulesList().stream().forEach(x->RuleHome.remove(x.getId()));
-	  
+	  ReflectionTestUtils.setField( SecurityService.getInstance( ), "_authenticationService", null );
+	  setAuthenticationEnabled( false );
+	  super.tearDown();
+  }
+
+  /**
+   * SecurityService.isAuthenticationEnable( ) reads a static flag set at init from the
+   * mylutece.authentication.enable property: injecting the authentication service is not enough,
+   * otherwise isUserInRole( ) always returns true and no rule is ever triggered.
+   */
+  private static void setAuthenticationEnabled( boolean bEnable )
+  {
+      try
+      {
+          Field field = SecurityService.class.getDeclaredField( "_bEnable" );
+          field.setAccessible( true );
+          field.set( null, bEnable );
+      }
+      catch( ReflectiveOperationException e )
+      {
+          throw new IllegalStateException( e );
+      }
   }
   
   
