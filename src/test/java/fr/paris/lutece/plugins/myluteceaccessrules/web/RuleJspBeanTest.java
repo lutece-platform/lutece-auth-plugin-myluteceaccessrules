@@ -35,6 +35,7 @@
 package fr.paris.lutece.plugins.myluteceaccessrules.web;
 
 
+import fr.paris.lutece.plugins.myluteceaccessrules.business.Rule;
 import fr.paris.lutece.plugins.myluteceaccessrules.business.RuleHome;
 import fr.paris.lutece.portal.business.user.AdminUser;
 import fr.paris.lutece.portal.service.admin.AccessDeniedException;
@@ -70,6 +71,7 @@ public class RuleJspBeanTest extends LuteceTestCase
     private static final String MESSAGETODISPLAY2 = "Messagetodisplay2";
     private static final String REDIRECTURL1 = "Redirecturl1";
     private static final String REDIRECTURL2 = "Redirecturl2";
+    private static final String MARK_ERRORS_DIV = "messages_errors_div";
 
 	@Test
 	public void testJspBeans(  ) throws AccessDeniedException
@@ -203,4 +205,72 @@ public class RuleJspBeanTest extends LuteceTestCase
 		}	
      
      }
+
+    /**
+     * A rule created with an empty title shows the creation form again with the error and the values typed.
+     *
+     * @throws Exception
+     *             if the controller fails
+     */
+    @Test
+    public void testCreateRuleWithEmptyTitleShowsErrors( ) throws Exception
+    {
+        MockHttpServletRequest request = new MockHttpServletRequest( );
+        request.addParameter( "title", "" );
+        request.addParameter( "description", DESCRIPTION1 );
+        request.addParameter( "action", "createRule" );
+        request.addParameter( "token", _securityTokenService.getToken( request, "createRule" ) );
+        request.setMethod( "POST" );
+        AdminUser adminUser = new AdminUser( );
+        adminUser.setAccessCode( "admin" );
+        AdminAuthenticationService.getInstance( ).registerUser( request, adminUser );
+        int nRulesBefore = RuleHome.getIdRulesList( ).size( );
+
+        String html = instance.processController( request, new MockHttpServletResponse( ) );
+
+        assertNotNull( html );
+        assertTrue( html.contains( MARK_ERRORS_DIV ), "the validation error is shown" );
+        assertTrue( html.contains( "value=\"" + DESCRIPTION1 + "\"" ), "the description typed is kept" );
+        assertEquals( nRulesBefore, RuleHome.getIdRulesList( ).size( ), "no rule is created" );
+    }
+
+    /**
+     * A rule modified with an empty title shows the modification form again with the error and the values typed.
+     *
+     * @throws Exception
+     *             if the controller fails
+     */
+    @Test
+    public void testModifyRuleWithEmptyTitleShowsErrors( ) throws Exception
+    {
+        Rule rule = new Rule( );
+        rule.setTitle( TITLE1 );
+        rule.setDescription( DESCRIPTION1 );
+        RuleHome.create( rule );
+
+        try
+        {
+            MockHttpServletRequest request = new MockHttpServletRequest( );
+            request.addParameter( "id", String.valueOf( rule.getId( ) ) );
+            request.addParameter( "title", "" );
+            request.addParameter( "description", DESCRIPTION2 );
+            request.addParameter( "action", "modifyRule" );
+            request.addParameter( "token", _securityTokenService.getToken( request, "modifyRule" ) );
+            request.setMethod( "POST" );
+            AdminUser adminUser = new AdminUser( );
+            adminUser.setAccessCode( "admin" );
+            AdminAuthenticationService.getInstance( ).registerUser( request, adminUser );
+
+            String html = instance.processController( request, new MockHttpServletResponse( ) );
+
+            assertNotNull( html );
+            assertTrue( html.contains( MARK_ERRORS_DIV ), "the validation error is shown" );
+            assertTrue( html.contains( "value=\"" + DESCRIPTION2 + "\"" ), "the description typed is kept" );
+            assertEquals( TITLE1, RuleHome.findByPrimaryKey( rule.getId( ) ).getTitle( ), "the rule is not changed" );
+        }
+        finally
+        {
+            RuleHome.remove( rule.getId( ) );
+        }
+    }
 }

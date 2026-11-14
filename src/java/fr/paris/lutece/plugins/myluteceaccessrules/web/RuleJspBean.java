@@ -60,6 +60,7 @@ import fr.paris.lutece.portal.service.security.SecurityTokenService;
 import fr.paris.lutece.portal.util.mvc.admin.annotations.Controller;
 import fr.paris.lutece.portal.util.mvc.commons.annotations.Action;
 import fr.paris.lutece.portal.util.mvc.commons.annotations.View;
+import fr.paris.lutece.portal.util.mvc.utils.MVCUtils;
 import fr.paris.lutece.util.ReferenceList;
 import fr.paris.lutece.util.url.UrlItem;
 
@@ -291,7 +292,8 @@ public class RuleJspBean extends MVCAdminJspBean
 
         if( bindingResult.isFailed() )
         {
-            return redirectView( request, VIEW_CREATE_RULE );
+            model.put( MVCUtils.MARK_ERRORS, bindingResult.getAllErrors( ) );
+            return getCreateRule( request, rule );
         }
 
         RuleHome.create( rule );
@@ -558,7 +560,8 @@ public class RuleJspBean extends MVCAdminJspBean
         // Check constraints
         if ( bindingResult.isFailed() )
         {
-            return redirect( request, VIEW_MODIFY_RULE, PARAMETER_ID_RULE, _rule.getId( ) );
+            model.put( MVCUtils.MARK_ERRORS, bindingResult.getAllErrors( ) );
+            return getModifyRule( request, rule );
         }
 
         RuleHome.update( rule );
