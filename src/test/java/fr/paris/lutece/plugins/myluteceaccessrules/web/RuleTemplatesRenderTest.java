@@ -33,6 +33,9 @@
  */
 package fr.paris.lutece.plugins.myluteceaccessrules.web;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -118,6 +121,25 @@ public class RuleTemplatesRenderTest extends LuteceTestCase
 
         assertWrittenAsText( strHtml );
         assertTrue( strHtml.contains( "data-toggle=\"collapse\"" ), strHtml );
+    }
+
+    /**
+     * The buttons that add or remove an URL of the creation form are not blocked by the validation of the required
+     * fields.
+     */
+    @Test
+    public void testCreateRuleUrlButtonsSkipValidation( )
+    {
+        String strHtml = _instance.getCreateRule( new MockHttpServletRequest( ), ruleWithMarkup( ) );
+
+        for ( String strAction : new String [ ] {
+                "action_addProtectedUrlCreate", "action_removeProtectedUrlCreate", "action_addPublicUrlCreate", "action_removePublicUrlCreate"
+        } )
+        {
+            Matcher matcher = Pattern.compile( "<button[^>]*name=\"" + strAction + "\"[^>]*>" ).matcher( strHtml );
+            assertTrue( matcher.find( ), strAction );
+            assertTrue( matcher.group( ).contains( "formnovalidate" ), matcher.group( ) );
+        }
     }
 
     /**

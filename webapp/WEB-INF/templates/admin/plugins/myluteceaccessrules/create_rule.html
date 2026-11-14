@@ -51,12 +51,12 @@
 				<@input type='hidden' name='protected_url_codelist' value='${rule.protectedUrls?map(protectedUrl -> protectedUrl.code)?join(",")}' />
        	   		<#list rule.protectedUrls as protectedUrl>
           			<@input type='text'  name='${protectedUrl.code}'  maxlength=255 value='${protectedUrl.name}' params={ 'aria-label': '#i18n{myluteceaccessrules.modify_rule.labelProtectedUrls} ' + protectedUrl?counter } />
-					<@button type='submit' name='action_removeProtectedUrlCreate' title='#i18n{myluteceaccessrules.modify_rule.buttonRemoveProtectedUrl}' buttonIcon='trash' color='danger' value='${protectedUrl.code}' hideTitle=['all'] params={ 'aria-label': '#i18n{myluteceaccessrules.modify_rule.buttonRemoveProtectedUrl} - ' + protectedUrl.name } />
+					<@button type='submit' name='action_removeProtectedUrlCreate' title='#i18n{myluteceaccessrules.modify_rule.buttonRemoveProtectedUrl}' buttonIcon='trash' color='danger' value='${protectedUrl.code}' hideTitle=['all'] params={ 'aria-label': '#i18n{myluteceaccessrules.modify_rule.buttonRemoveProtectedUrl} - ' + protectedUrl.name, 'formnovalidate': true } />
 				</#list>
 				    
 			</#if>
 			 <@input type='text' id='protected_url' name='protected_url'  maxlength=255 value='' />
-			<@button type='submit' name='action_addProtectedUrlCreate' title='#i18n{myluteceaccessrules.modify_rule.buttonAddProtectedUrl}' buttonIcon='check' />
+			<@button type='submit' name='action_addProtectedUrlCreate' title='#i18n{myluteceaccessrules.modify_rule.buttonAddProtectedUrl}' buttonIcon='check' params={ 'formnovalidate': true } />
 						
 		</@formGroup>
 		
@@ -67,12 +67,12 @@
 				<@input type='hidden' name='public_url_codelist' value='${rule.publicUrls?map(publicUrl -> publicUrl.code)?join(",")}' />
        	   		<#list rule.publicUrls as publicUrl>
           			<@input type='text'  name='${publicUrl.code}'  maxlength=255 value='${publicUrl.name}' params={ 'aria-label': '#i18n{myluteceaccessrules.modify_rule.labelPublicUrls} ' + publicUrl?counter } />
-					<@button type='submit' name='action_removePublicUrlCreate' title='#i18n{myluteceaccessrules.modify_rule.buttonRemovePublicUrl}' buttonIcon='trash' color='danger' value='${publicUrl.code}' hideTitle=['all'] params={ 'aria-label': '#i18n{myluteceaccessrules.modify_rule.buttonRemovePublicUrl} - ' + publicUrl.name } />
+					<@button type='submit' name='action_removePublicUrlCreate' title='#i18n{myluteceaccessrules.modify_rule.buttonRemovePublicUrl}' buttonIcon='trash' color='danger' value='${publicUrl.code}' hideTitle=['all'] params={ 'aria-label': '#i18n{myluteceaccessrules.modify_rule.buttonRemovePublicUrl} - ' + publicUrl.name, 'formnovalidate': true } />
 				</#list>
 				    
 			</#if>
 			 <@input type='text' id='public_url' name='public_url'  maxlength=255 value='' />
-			<@button type='submit' name='action_addPublicUrlCreate' title='#i18n{myluteceaccessrules.modify_rule.buttonAddPublicUrl}' buttonIcon='check' />
+			<@button type='submit' name='action_addPublicUrlCreate' title='#i18n{myluteceaccessrules.modify_rule.buttonAddPublicUrl}' buttonIcon='check' params={ 'formnovalidate': true } />
 						
 		</@formGroup>
 		
