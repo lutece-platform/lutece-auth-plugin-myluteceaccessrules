@@ -19,7 +19,7 @@
 			<@checkBox id="enable"  orientation='switch'  name="enable"  value="1" checked=rule.enable!'false' tabIndex='2' />
 		</@formGroup>
 		<@formGroup labelFor='external' orientation='inline' labelKey='#i18n{myluteceaccessrules.modify_rule.labelExternal}' helpKey='#i18n{myluteceaccessrules.modify_rule.labelExternal.help}'>
-			<@checkBox id="external"  orientation='switch'   name="external"  value="1" checked=rule.external!'false' tabIndex='3'  params='data-toggle="collapse" data-target=".messagetodisplayGroup "'/>
+			<@checkBox id="external"  orientation='switch'   name="external"  value="1" checked=rule.external!'false' tabIndex='3'  params={"data-toggle": "collapse", "data-target": ".messagetodisplayGroup "}/>
 		</@formGroup>
 		<@formGroup  class="messagetodisplayGroup collapse  ${rule.external?then('','show')}" id="messagetodisplayGroup" labelFor='messagetodisplay' labelKey='#i18n{myluteceaccessrules.modify_rule.labelMessagetodisplay}' helpKey='#i18n{myluteceaccessrules.modify_rule.labelMessagetodisplay.help}'  mandatory=false >
           	<@input type='textarea' id='messagetodisplay' name='messagetodisplay'  value='${rule.messagetodisplay!\'\'}' tabIndex='4' />
