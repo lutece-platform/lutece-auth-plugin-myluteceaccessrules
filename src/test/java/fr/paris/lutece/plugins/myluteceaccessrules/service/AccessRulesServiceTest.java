@@ -101,6 +101,59 @@ public class AccessRulesServiceTest extends LuteceTestCase{
 	
 	
 	
+	/**
+	 * The URLs of a rule accepted for a redirection: empty, relative to the webapp, or absolute http or https.
+	 */
+	@Test
+	public void testValidRuleUrls( )
+	{
+		assertTrue( _accessRulesService.isValidRuleUrl( null ) );
+		assertTrue( _accessRulesService.isValidRuleUrl( "" ) );
+		assertTrue( _accessRulesService.isValidRuleUrl( "jsp/site/Portal.jsp?page=myapp" ) );
+		assertTrue( _accessRulesService.isValidRuleUrl( "/jsp/site/Portal.jsp?page=myapp&param=a:b" ) );
+		assertTrue( _accessRulesService.isValidRuleUrl( "$baseurl/jsp/site/Portal.jsp?page=myapp" ) );
+		assertTrue( _accessRulesService.isValidRuleUrl( "http://example.org/login" ) );
+		assertTrue( _accessRulesService.isValidRuleUrl( "HTTPS://example.org/login?back_url=$backurl" ) );
+	}
+
+	/**
+	 * The URLs of a rule refused for a redirection: other schemes, two leading slashes, backslashes, control characters.
+	 */
+	@Test
+	public void testInvalidRuleUrls( )
+	{
+		assertFalse( _accessRulesService.isValidRuleUrl( "ftp://example.org/" ) );
+		assertFalse( _accessRulesService.isValidRuleUrl( "javascript:void(0)" ) );
+		assertFalse( _accessRulesService.isValidRuleUrl( "data:text/plain,test" ) );
+		assertFalse( _accessRulesService.isValidRuleUrl( "https:example.org" ) );
+		assertFalse( _accessRulesService.isValidRuleUrl( "https:///example.org" ) );
+		assertFalse( _accessRulesService.isValidRuleUrl( "//example.org/" ) );
+		assertFalse( _accessRulesService.isValidRuleUrl( "$baseurl//example.org/" ) );
+		assertFalse( _accessRulesService.isValidRuleUrl( "/\\example.org/" ) );
+		assertFalse( _accessRulesService.isValidRuleUrl( "\\example.org/" ) );
+		assertFalse( _accessRulesService.isValidRuleUrl( "jsp/site/Portal.jsp\r\nX-Test: 1" ) );
+		assertFalse( _accessRulesService.isValidRuleUrl( "jsp/site/Portal.jsp\t" ) );
+	}
+
+	/**
+	 * A rule is redirected only when both its redirect URL and its back URL are valid.
+	 */
+	@Test
+	public void testIsValidRedirection( )
+	{
+		Rule rule = new Rule( );
+		rule.setRedirecturl( "https://example.org/login?back_url=$backurl" );
+		rule.setBackUrl( "$baseurl/jsp/site/Portal.jsp" );
+		assertTrue( _accessRulesService.isValidRedirection( rule ) );
+
+		rule.setBackUrl( "//example.org/" );
+		assertFalse( _accessRulesService.isValidRedirection( rule ) );
+
+		rule.setBackUrl( null );
+		rule.setRedirecturl( "ftp://example.org/" );
+		assertFalse( _accessRulesService.isValidRedirection( rule ) );
+	}
+
   void insertTestRule()
   {
 	  Rule internalRule=new Rule();

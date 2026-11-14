@@ -273,4 +273,72 @@ public class RuleJspBeanTest extends LuteceTestCase
             RuleHome.remove( rule.getId( ) );
         }
     }
+
+    /**
+     * A rule created with a redirect URL whose scheme is not http or https shows the creation form again with an error.
+     *
+     * @throws Exception
+     *             if the controller fails
+     */
+    @Test
+    public void testCreateRuleWithInvalidRedirectUrlShowsErrors( ) throws Exception
+    {
+        MockHttpServletRequest request = new MockHttpServletRequest( );
+        request.addParameter( "title", TITLE1 );
+        request.addParameter( "external", "true" );
+        request.addParameter( "redirecturl", "ftp://example.org/login" );
+        request.addParameter( "action", "createRule" );
+        request.addParameter( "token", _securityTokenService.getToken( request, "createRule" ) );
+        request.setMethod( "POST" );
+        AdminUser adminUser = new AdminUser( );
+        adminUser.setAccessCode( "admin" );
+        AdminAuthenticationService.getInstance( ).registerUser( request, adminUser );
+        int nRulesBefore = RuleHome.getIdRulesList( ).size( );
+
+        String html = instance.processController( request, new MockHttpServletResponse( ) );
+
+        assertNotNull( html );
+        assertTrue( html.contains( MARK_ERRORS_DIV ), "the validation error is shown" );
+        assertEquals( nRulesBefore, RuleHome.getIdRulesList( ).size( ), "no rule is created" );
+    }
+
+    /**
+     * A rule modified with a protocol-relative back URL shows the modification form again with an error.
+     *
+     * @throws Exception
+     *             if the controller fails
+     */
+    @Test
+    public void testModifyRuleWithInvalidBackUrlShowsErrors( ) throws Exception
+    {
+        Rule rule = new Rule( );
+        rule.setTitle( TITLE1 );
+        RuleHome.create( rule );
+
+        try
+        {
+            MockHttpServletRequest request = new MockHttpServletRequest( );
+            request.addParameter( "id", String.valueOf( rule.getId( ) ) );
+            request.addParameter( "title", TITLE2 );
+            request.addParameter( "external", "true" );
+            request.addParameter( "redirecturl", "https://example.org/login?back=$backurl" );
+            request.addParameter( "backUrl", "//example.org/" );
+            request.addParameter( "action", "modifyRule" );
+            request.addParameter( "token", _securityTokenService.getToken( request, "modifyRule" ) );
+            request.setMethod( "POST" );
+            AdminUser adminUser = new AdminUser( );
+            adminUser.setAccessCode( "admin" );
+            AdminAuthenticationService.getInstance( ).registerUser( request, adminUser );
+
+            String html = instance.processController( request, new MockHttpServletResponse( ) );
+
+            assertNotNull( html );
+            assertTrue( html.contains( MARK_ERRORS_DIV ), "the validation error is shown" );
+            assertEquals( TITLE1, RuleHome.findByPrimaryKey( rule.getId( ) ).getTitle( ), "the rule is not changed" );
+        }
+        finally
+        {
+            RuleHome.remove( rule.getId( ) );
+        }
+    }
 }

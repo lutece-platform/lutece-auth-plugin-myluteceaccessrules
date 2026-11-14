@@ -52,6 +52,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import fr.paris.lutece.plugins.myluteceaccessrules.business.Rule;
 import fr.paris.lutece.plugins.myluteceaccessrules.business.RuleHome;
+import fr.paris.lutece.plugins.myluteceaccessrules.service.AccessRulesService;
 import fr.paris.lutece.portal.business.role.RoleHome;
 import fr.paris.lutece.portal.service.admin.AccessDeniedException;
 import fr.paris.lutece.portal.service.message.AdminMessage;
@@ -142,6 +143,12 @@ public class RuleJspBean extends MVCAdminJspBean
     // Validations
     private static final String VALIDATION_ATTRIBUTES_PREFIX = "myluteceaccessrules.model.entity.rule.attribute.";
 
+    /** The Constant MESSAGE_INVALID_REDIRECT_URL. */
+    private static final String MESSAGE_INVALID_REDIRECT_URL = "myluteceaccessrules.validation.rule.Redirecturl.invalid";
+
+    /** The Constant MESSAGE_INVALID_BACK_URL. */
+    private static final String MESSAGE_INVALID_BACK_URL = "myluteceaccessrules.validation.rule.BackUrl.invalid";
+
     /** The Constant VIEW_MANAGE_RULES. */
     // Views
     private static final String VIEW_MANAGE_RULES = "manageRules";
@@ -216,6 +223,9 @@ public class RuleJspBean extends MVCAdminJspBean
 
     @Inject
     Models model;
+
+    @Inject
+    private AccessRulesService _accessRulesService;
     
     /**
      * Build the Manage View.
@@ -293,6 +303,11 @@ public class RuleJspBean extends MVCAdminJspBean
         if( bindingResult.isFailed() )
         {
             model.put( MVCUtils.MARK_ERRORS, bindingResult.getAllErrors( ) );
+            return getCreateRule( request, rule );
+        }
+
+        if ( !validateRuleUrls( rule ) )
+        {
             return getCreateRule( request, rule );
         }
 
@@ -564,6 +579,11 @@ public class RuleJspBean extends MVCAdminJspBean
             return getModifyRule( request, rule );
         }
 
+        if ( !validateRuleUrls( rule ) )
+        {
+            return getModifyRule( request, rule );
+        }
+
         RuleHome.update( rule );
         addInfo( INFO_RULE_UPDATED, getLocale(  ) );
 
@@ -752,6 +772,32 @@ public class RuleJspBean extends MVCAdminJspBean
         rule.setRoles(new ReferenceList());
         RoleHome.getRolesList(getUser()).stream().filter(x->request.getParameter(PREFIX_PARAMETER_ROLE+x.getCode())!=null).forEach(x->rule.getRoles().addItem(x.getCode(), x.getCode()));
 
+    }
+
+    /**
+     * Validate the redirect URL and the back URL of a rule, and add an error for each invalid one
+     *
+     * @param rule
+     *            the Rule
+     * @return true if both URLs are valid
+     */
+    private boolean validateRuleUrls( Rule rule )
+    {
+        boolean bValid = true;
+
+        if ( !_accessRulesService.isValidRuleUrl( rule.getRedirecturl( ) ) )
+        {
+            addError( MESSAGE_INVALID_REDIRECT_URL, getLocale( ) );
+            bValid = false;
+        }
+
+        if ( !_accessRulesService.isValidRuleUrl( rule.getBackUrl( ) ) )
+        {
+            addError( MESSAGE_INVALID_BACK_URL, getLocale( ) );
+            bValid = false;
+        }
+
+        return bValid;
     }
 
     /**

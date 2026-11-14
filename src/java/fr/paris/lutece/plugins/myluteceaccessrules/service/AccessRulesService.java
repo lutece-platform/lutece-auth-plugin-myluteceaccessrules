@@ -39,6 +39,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import fr.paris.lutece.portal.service.util.AppLogService;
@@ -117,6 +118,12 @@ public class AccessRulesService
     
     /** The Constant MARKER_BACK_URL. */
     private static final String MARKER_BACK_URL = "$backurl";
+
+    /** A URL that starts with a scheme. */
+    private static final Pattern PATTERN_URL_SCHEME = Pattern.compile( "^[A-Za-z][A-Za-z0-9+.-]*:" );
+
+    /** An absolute http or https URL with a host. */
+    private static final Pattern PATTERN_HTTP_URL = Pattern.compile( "^https?://[^/]", Pattern.CASE_INSENSITIVE );
     
 
     /** The cache. */
@@ -425,4 +432,52 @@ public class AccessRulesService
     
     
     
+    /**
+     * Checks that the redirect URL and the back URL of a rule can be used for a redirection
+     *
+     * @param rule
+     *            the rule
+     * @return true if both URLs are valid
+     */
+    public boolean isValidRedirection( Rule rule )
+    {
+        return isValidRuleUrl( rule.getRedirecturl( ) ) && isValidRuleUrl( rule.getBackUrl( ) );
+    }
+
+    /**
+     * Checks a URL of a rule: an empty URL, a URL relative to the webapp (it may start with the bookmark $baseurl) or an
+     * absolute http or https URL is valid. Other schemes, URLs starting with two slashes, backslashes and control
+     * characters are refused.
+     *
+     * @param strUrl
+     *            the URL to check
+     * @return true if the URL is valid
+     */
+    public boolean isValidRuleUrl( String strUrl )
+    {
+        if ( StringUtils.isEmpty( strUrl ) )
+        {
+            return true;
+        }
+
+        if ( strUrl.indexOf( '\\' ) >= 0 || strUrl.chars( ).anyMatch( Character::isISOControl ) )
+        {
+            return false;
+        }
+
+        String strUrlToCheck = strUrl.startsWith( MARKER_BASE_URL ) ? strUrl.substring( MARKER_BASE_URL.length( ) ) : strUrl;
+
+        if ( strUrlToCheck.startsWith( "//" ) )
+        {
+            return false;
+        }
+
+        if ( PATTERN_URL_SCHEME.matcher( strUrlToCheck ).find( ) )
+        {
+            return PATTERN_HTTP_URL.matcher( strUrlToCheck ).find( );
+        }
+
+        return true;
+    }
+
 }

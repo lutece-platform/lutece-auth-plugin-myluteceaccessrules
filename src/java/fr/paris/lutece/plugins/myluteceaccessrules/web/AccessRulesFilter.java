@@ -55,6 +55,7 @@ import fr.paris.lutece.portal.service.message.SiteMessage;
 import fr.paris.lutece.portal.service.message.SiteMessageException;
 import fr.paris.lutece.portal.service.message.SiteMessageService;
 import fr.paris.lutece.portal.service.security.SecurityService;
+import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.service.util.AppPathService;
 import fr.paris.lutece.portal.service.util.AppPropertiesService;
 
@@ -102,7 +103,14 @@ public class AccessRulesFilter implements Filter
         	SecurityService.getInstance().logoutUser(req);
         	 int nbRedirect=!StringUtils.isEmpty(request.getParameter( AccessRulesService.PARAMETER_NB_REDIRECT)) ? Integer.parseInt(req.getParameter( AccessRulesService.PARAMETER_NB_REDIRECT)):0;      
         	      
-        	if(nbRedirect < AppPropertiesService.getPropertyInt(AccessRulesService.PROPERTY_MAX_REDIRECT, 10)  && rule.isExternal() && StringUtils.isNotEmpty(rule.getRedirecturl()))
+        	boolean bRedirect = nbRedirect < AppPropertiesService.getPropertyInt(AccessRulesService.PROPERTY_MAX_REDIRECT, 10)  && rule.isExternal() && StringUtils.isNotEmpty(rule.getRedirecturl());
+        	if ( bRedirect && !_accessRulesService.isValidRedirection( rule ) )
+        	{
+        		AppLogService.error( "Access rule {}: the redirect URL or the back URL is not valid, the message is displayed instead", rule.getId( ) );
+        		bRedirect = false;
+        	}
+
+        	if( bRedirect )
         	{
         		resp.sendRedirect(  _accessRulesService.buildRedirectUrl(rule, req,nbRedirect));
         	}
