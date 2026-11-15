@@ -119,9 +119,9 @@ public final class RuleHome
         _dao.delete( nKey, _plugin );
 
         
-        DatastoreService.removeDataByPrefix(RULE_PROTECTED_URL_PREFIX+nKey);
-        DatastoreService.removeDataByPrefix(RULE_PUBLIC_URL_PREFIX+nKey);
-        DatastoreService.removeDataByPrefix(RULE_ROLES_PREFIX+nKey);
+        DatastoreService.removeDataByPrefix(getRuleKeyPrefix(RULE_PROTECTED_URL_PREFIX, nKey));
+        DatastoreService.removeDataByPrefix(getRuleKeyPrefix(RULE_PUBLIC_URL_PREFIX, nKey));
+        DatastoreService.removeDataByPrefix(getRuleKeyPrefix(RULE_ROLES_PREFIX, nKey));
 
         _accessRulesService.getCache().resetCache();
         
@@ -205,20 +205,20 @@ public final class RuleHome
     private static void updateRuleUrls(Rule rule)
     {
     	  int[] idx = { 0 };
-    	 DatastoreService.removeDataByPrefix(RULE_PROTECTED_URL_PREFIX+rule.getId());
-         DatastoreService.removeDataByPrefix(RULE_PUBLIC_URL_PREFIX+rule.getId());
+    	 DatastoreService.removeDataByPrefix(getRuleKeyPrefix(RULE_PROTECTED_URL_PREFIX, rule.getId()));
+         DatastoreService.removeDataByPrefix(getRuleKeyPrefix(RULE_PUBLIC_URL_PREFIX, rule.getId()));
          
          if( rule.getProtectedUrls()!=null )
          {
         	
-         	rule.getProtectedUrls().stream().forEach(x -> DatastoreService.setInstanceDataValue(RULE_PROTECTED_URL_PREFIX+rule.getId()+"_"+idx[0]++, x.getName()));
+         	rule.getProtectedUrls().stream().forEach(x -> DatastoreService.setInstanceDataValue(getRuleKeyPrefix(RULE_PROTECTED_URL_PREFIX, rule.getId())+idx[0]++, x.getName()));
          	
          }
          
          if( rule.getPublicUrls()!=null )
          {
         	idx[0]=0; 
-         	rule.getPublicUrls().stream().forEach(x -> DatastoreService.setInstanceDataValue(RULE_PUBLIC_URL_PREFIX+rule.getId()+"_"+idx[0]++, x.getName()));
+         	rule.getPublicUrls().stream().forEach(x -> DatastoreService.setInstanceDataValue(getRuleKeyPrefix(RULE_PUBLIC_URL_PREFIX, rule.getId())+idx[0]++, x.getName()));
          	
          }
            	
@@ -227,13 +227,13 @@ public final class RuleHome
     private static void updateRuleRoles(Rule rule)
     {
     	  int[] idx = { 0 };
-    	 DatastoreService.removeDataByPrefix(RULE_ROLES_PREFIX+rule.getId());
+    	 DatastoreService.removeDataByPrefix(getRuleKeyPrefix(RULE_ROLES_PREFIX, rule.getId()));
      
          
          if( rule.getRoles() !=null )
          {
         	
-         	rule.getRoles().stream().forEach(x -> DatastoreService.setInstanceDataValue(RULE_ROLES_PREFIX+rule.getId()+"_"+idx[0]++, x.getName()));
+         	rule.getRoles().stream().forEach(x -> DatastoreService.setInstanceDataValue(getRuleKeyPrefix(RULE_ROLES_PREFIX, rule.getId())+idx[0]++, x.getName()));
          	
          }
          
@@ -244,8 +244,8 @@ public final class RuleHome
     private static void setRuleUrls(Rule rule)
     {
 
-        rule.setProtectedUrls(DatastoreService.getDataByPrefix( RULE_PROTECTED_URL_PREFIX+rule.getId() ));
-        rule.setPublicUrls(DatastoreService.getDataByPrefix( RULE_PUBLIC_URL_PREFIX+rule.getId() ));	
+        rule.setProtectedUrls(getRuleData( RULE_PROTECTED_URL_PREFIX, rule.getId() ));
+        rule.setPublicUrls(getRuleData( RULE_PUBLIC_URL_PREFIX, rule.getId() ));	
     	
     
     }
@@ -253,9 +253,42 @@ public final class RuleHome
     private static void setRuleRoles(Rule rule)
     {
 
-          rule.setRoles(DatastoreService.getDataByPrefix( RULE_ROLES_PREFIX+rule.getId() ));	
+          rule.setRoles(getRuleData( RULE_ROLES_PREFIX, rule.getId() ));	
     	
     
+    }
+
+    /**
+     * Returns the datastore key prefix of the data of a rule, ended by a separator so that rule 1 does not match rule 10
+     *
+     * @param strPrefix
+     *            the prefix of the data type
+     * @param nIdRule
+     *            the rule id
+     * @return the key prefix
+     */
+    private static String getRuleKeyPrefix( String strPrefix, int nIdRule )
+    {
+        return strPrefix + nIdRule + "_";
+    }
+
+    /**
+     * Returns the data of a rule whose key starts exactly with its key prefix
+     * (the datastore lookup by prefix also matches other characters in place of the underscores)
+     *
+     * @param strPrefix
+     *            the prefix of the data type
+     * @param nIdRule
+     *            the rule id
+     * @return the data of the rule
+     */
+    private static ReferenceList getRuleData( String strPrefix, int nIdRule )
+    {
+        String strKeyPrefix = getRuleKeyPrefix( strPrefix, nIdRule );
+        ReferenceList list = new ReferenceList( );
+        DatastoreService.getDataByPrefix( strKeyPrefix ).stream( ).filter( item -> item.getCode( ).startsWith( strKeyPrefix ) ).forEach( list::add );
+
+        return list;
     }
 }
 

@@ -34,7 +34,14 @@
 
 package fr.paris.lutece.plugins.myluteceaccessrules.business;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import fr.paris.lutece.portal.service.datastore.DatastoreService;
 import fr.paris.lutece.test.LuteceTestCase;
+import fr.paris.lutece.util.ReferenceItem;
+import fr.paris.lutece.util.ReferenceList;
+import fr.paris.lutece.util.sql.DAOUtil;
 import org.junit.jupiter.api.Test;
 
 
@@ -109,5 +116,82 @@ public class RuleBusinessTest extends LuteceTestCase
     
     
      
+
+    /**
+     * The URLs and the roles of a rule are read, updated and removed without touching those of a rule whose id starts
+     * with the same digits (rule n and rule n0).
+     */
+    @Test
+    public void testUrlsAndRolesAreIsolatedFromRulesWithLongerIds( )
+    {
+        Rule rule = newRuleWithUrlsAndRoles( "short" );
+        RuleHome.create( rule );
+        int nLongId = rule.getId( ) * 10;
+        Rule ruleLongId = newRuleWithUrlsAndRoles( "long" );
+        ruleLongId.setId( nLongId );
+
+        try
+        {
+            insertRuleWithId( nLongId );
+            RuleHome.update( ruleLongId );
+
+            Rule ruleStored = RuleHome.findByPrimaryKey( rule.getId( ) );
+            assertEquals( List.of( "/short/protected" ), names( ruleStored.getProtectedUrls( ) ), "protected URLs of the rule only" );
+            assertEquals( List.of( "/short/public" ), names( ruleStored.getPublicUrls( ) ), "public URLs of the rule only" );
+            assertEquals( List.of( "short_role" ), names( ruleStored.getRoles( ) ), "roles of the rule only" );
+
+            rule.setTitle( "modified" );
+            RuleHome.update( rule );
+            assertLongIdRuleUnchanged( nLongId );
+
+            RuleHome.remove( rule.getId( ) );
+            assertLongIdRuleUnchanged( nLongId );
+        }
+        finally
+        {
+            RuleHome.remove( rule.getId( ) );
+            RuleHome.remove( nLongId );
+        }
+    }
+
+    private static void assertLongIdRuleUnchanged( int nLongId )
+    {
+        Rule ruleStored = RuleHome.findByPrimaryKey( nLongId );
+        assertEquals( List.of( "/long/protected" ), names( ruleStored.getProtectedUrls( ) ), "protected URLs of the other rule kept" );
+        assertEquals( List.of( "/long/public" ), names( ruleStored.getPublicUrls( ) ), "public URLs of the other rule kept" );
+        assertEquals( List.of( "long_role" ), names( ruleStored.getRoles( ) ), "roles of the other rule kept" );
+        assertNotNull( DatastoreService.getDataValue( RuleHome.RULE_PROTECTED_URL_PREFIX + nLongId + "_0", null ) );
+    }
+
+    private static Rule newRuleWithUrlsAndRoles( String strName )
+    {
+        Rule rule = new Rule( );
+        rule.setTitle( strName );
+        ReferenceList listProtectedUrls = new ReferenceList( );
+        listProtectedUrls.addItem( "p", "/" + strName + "/protected" );
+        rule.setProtectedUrls( listProtectedUrls );
+        ReferenceList listPublicUrls = new ReferenceList( );
+        listPublicUrls.addItem( "q", "/" + strName + "/public" );
+        rule.setPublicUrls( listPublicUrls );
+        ReferenceList listRoles = new ReferenceList( );
+        listRoles.addItem( strName + "_role", strName + "_role" );
+        rule.setRoles( listRoles );
+        return rule;
+    }
+
+    private static void insertRuleWithId( int nId )
+    {
+        try ( DAOUtil daoUtil = new DAOUtil( "INSERT INTO mylutece_accessrules_rule ( id_rule, title ) VALUES ( ?, ? )" ) )
+        {
+            daoUtil.setInt( 1, nId );
+            daoUtil.setString( 2, "long" );
+            daoUtil.executeUpdate( );
+        }
+    }
+
+    private static List<String> names( ReferenceList list )
+    {
+        return list.stream( ).map( ReferenceItem::getName ).sorted( ).collect( Collectors.toList( ) );
+    }
 
 }
