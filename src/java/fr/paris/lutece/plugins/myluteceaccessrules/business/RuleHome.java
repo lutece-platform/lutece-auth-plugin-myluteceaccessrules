@@ -41,6 +41,7 @@ import fr.paris.lutece.plugins.myluteceaccessrules.service.AccessRulesService;
 import fr.paris.lutece.portal.service.datastore.DatastoreService;
 import fr.paris.lutece.portal.service.plugin.Plugin;
 import fr.paris.lutece.portal.service.plugin.PluginService;
+import fr.paris.lutece.portal.service.util.AppPathService;
 import fr.paris.lutece.util.ReferenceList;
 import jakarta.enterprise.inject.spi.CDI;
 
@@ -119,9 +120,9 @@ public final class RuleHome
         _dao.delete( nKey, _plugin );
 
         
-        DatastoreService.removeDataByPrefix(getRuleKeyPrefix(RULE_PROTECTED_URL_PREFIX, nKey));
-        DatastoreService.removeDataByPrefix(getRuleKeyPrefix(RULE_PUBLIC_URL_PREFIX, nKey));
-        DatastoreService.removeDataByPrefix(getRuleKeyPrefix(RULE_ROLES_PREFIX, nKey));
+        DatastoreService.removeInstanceDataByPrefix(getRuleKeyPrefix(RULE_PROTECTED_URL_PREFIX, nKey));
+        DatastoreService.removeInstanceDataByPrefix(getRuleKeyPrefix(RULE_PUBLIC_URL_PREFIX, nKey));
+        DatastoreService.removeInstanceDataByPrefix(getRuleKeyPrefix(RULE_ROLES_PREFIX, nKey));
 
         _accessRulesService.getCache().resetCache();
         
@@ -205,8 +206,8 @@ public final class RuleHome
     private static void updateRuleUrls(Rule rule)
     {
     	  int[] idx = { 0 };
-    	 DatastoreService.removeDataByPrefix(getRuleKeyPrefix(RULE_PROTECTED_URL_PREFIX, rule.getId()));
-         DatastoreService.removeDataByPrefix(getRuleKeyPrefix(RULE_PUBLIC_URL_PREFIX, rule.getId()));
+    	 DatastoreService.removeInstanceDataByPrefix(getRuleKeyPrefix(RULE_PROTECTED_URL_PREFIX, rule.getId()));
+         DatastoreService.removeInstanceDataByPrefix(getRuleKeyPrefix(RULE_PUBLIC_URL_PREFIX, rule.getId()));
          
          if( rule.getProtectedUrls()!=null )
          {
@@ -227,7 +228,7 @@ public final class RuleHome
     private static void updateRuleRoles(Rule rule)
     {
     	  int[] idx = { 0 };
-    	 DatastoreService.removeDataByPrefix(getRuleKeyPrefix(RULE_ROLES_PREFIX, rule.getId()));
+    	 DatastoreService.removeInstanceDataByPrefix(getRuleKeyPrefix(RULE_ROLES_PREFIX, rule.getId()));
      
          
          if( rule.getRoles() !=null )
@@ -273,7 +274,7 @@ public final class RuleHome
     }
 
     /**
-     * Returns the data of a rule whose key starts exactly with its key prefix
+     * Returns the data of a rule in the current webapp instance whose key starts exactly with its key prefix
      * (the datastore lookup by prefix also matches other characters in place of the underscores)
      *
      * @param strPrefix
@@ -285,8 +286,12 @@ public final class RuleHome
     private static ReferenceList getRuleData( String strPrefix, int nIdRule )
     {
         String strKeyPrefix = getRuleKeyPrefix( strPrefix, nIdRule );
+        // same key as DatastoreService.setInstanceDataValue
+        String strInstanceKeyPrefix = AppPathService.isDefaultWebappInstance( ) ? strKeyPrefix
+                : AppPathService.getWebappInstance( ) + "." + strKeyPrefix;
         ReferenceList list = new ReferenceList( );
-        DatastoreService.getDataByPrefix( strKeyPrefix ).stream( ).filter( item -> item.getCode( ).startsWith( strKeyPrefix ) ).forEach( list::add );
+        DatastoreService.getInstanceDataByPrefix( strKeyPrefix ).stream( ).filter( item -> item.getCode( ).startsWith( strInstanceKeyPrefix ) )
+                .forEach( list::add );
 
         return list;
     }

@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import fr.paris.lutece.portal.service.datastore.DatastoreService;
+import fr.paris.lutece.portal.service.util.AppPathService;
 import fr.paris.lutece.test.LuteceTestCase;
 import fr.paris.lutece.util.ReferenceItem;
 import fr.paris.lutece.util.ReferenceList;
@@ -62,6 +63,8 @@ public class RuleBusinessTest extends LuteceTestCase
     private static final String MESSAGETODISPLAY2 = "Messagetodisplay2";
     private static final String REDIRECTURL1 = "Redirecturl1";
     private static final String REDIRECTURL2 = "Redirecturl2";
+    private static final String PROPERTY_WEBAPP_INSTANCE = "lutece.webapp.instance";
+    private static final String TEST_INSTANCE = "testinstance";
 
 	/**
 	* test Rule
@@ -192,6 +195,38 @@ public class RuleBusinessTest extends LuteceTestCase
     private static List<String> names( ReferenceList list )
     {
         return list.stream( ).map( ReferenceItem::getName ).sorted( ).collect( Collectors.toList( ) );
+    }
+
+    /**
+     * On a webapp instance other than the default one, the URLs and the roles of a rule are written with the instance
+     * name in front of the key: they must be read and removed in the same instance.
+     */
+    @Test
+    public void testUrlsAndRolesInANonDefaultWebappInstance( )
+    {
+        System.setProperty( PROPERTY_WEBAPP_INSTANCE, TEST_INSTANCE );
+        Rule rule = newRuleWithUrlsAndRoles( "instance" );
+
+        try
+        {
+            assertEquals( TEST_INSTANCE, AppPathService.getWebappInstance( ), "the test runs in a non-default webapp instance" );
+            RuleHome.create( rule );
+            String strStoredKey = TEST_INSTANCE + "." + RuleHome.RULE_PROTECTED_URL_PREFIX + rule.getId( ) + "_0";
+            assertTrue( DatastoreService.getDataValue( strStoredKey, null ) != null, "the data is written in the instance" );
+
+            Rule ruleStored = RuleHome.findByPrimaryKey( rule.getId( ) );
+            assertEquals( List.of( "/instance/protected" ), names( ruleStored.getProtectedUrls( ) ), "protected URLs read in the instance" );
+            assertEquals( List.of( "/instance/public" ), names( ruleStored.getPublicUrls( ) ), "public URLs read in the instance" );
+            assertEquals( List.of( "instance_role" ), names( ruleStored.getRoles( ) ), "roles read in the instance" );
+
+            RuleHome.remove( rule.getId( ) );
+            assertTrue( DatastoreService.getDataValue( strStoredKey, null ) == null, "the data is removed in the instance" );
+        }
+        finally
+        {
+            RuleHome.remove( rule.getId( ) );
+            System.clearProperty( PROPERTY_WEBAPP_INSTANCE );
+        }
     }
 
 }
