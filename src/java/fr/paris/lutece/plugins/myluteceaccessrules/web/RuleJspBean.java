@@ -728,7 +728,7 @@ public class RuleJspBean extends MVCAdminJspBean
     {
         if(StringUtils.isNotEmpty(request.getParameter(PARAMETER_PROTECTED_URL)))
         {
-            rule.getProtectedUrls().addItem(RuleHome.RULE_PROTECTED_URL_PREFIX+rule.getId()+"_"+rule.getProtectedUrls().size()+1, request.getParameter(PARAMETER_PROTECTED_URL));
+            rule.getProtectedUrls().addItem(getNewUrlCode(rule.getProtectedUrls(), RuleHome.RULE_PROTECTED_URL_PREFIX+rule.getId()+"_"), request.getParameter(PARAMETER_PROTECTED_URL));
         }
     }
 
@@ -765,10 +765,45 @@ public class RuleJspBean extends MVCAdminJspBean
     {
         if(StringUtils.isNotEmpty(request.getParameter(PARAMETER_PUBLIC_URL)))
         {
-            rule.getPublicUrls().addItem(RuleHome.RULE_PUBLIC_URL_PREFIX+rule.getId()+"_"+rule.getPublicUrls().size()+1, request.getParameter(PARAMETER_PUBLIC_URL));
+            rule.getPublicUrls().addItem(getNewUrlCode(rule.getPublicUrls(), RuleHome.RULE_PUBLIC_URL_PREFIX+rule.getId()+"_"), request.getParameter(PARAMETER_PUBLIC_URL));
         }
     }
     
+    /**
+     * Returns a code not used yet by the rows of a list of URLs, so that a row added after a removal does not take the code of another row
+     *
+     * @param listUrls
+     *            the rows of the list of URLs
+     * @param strPrefix
+     *            the prefix of the codes
+     * @return the new code
+     */
+    private static String getNewUrlCode( ReferenceList listUrls, String strPrefix )
+    {
+        int nIndex = listUrls.size( );
+
+        while ( isUrlCodeUsed( listUrls, strPrefix + nIndex ) )
+        {
+            nIndex++;
+        }
+
+        return strPrefix + nIndex;
+    }
+
+    /**
+     * Tells whether a code is used by a row of a list of URLs
+     *
+     * @param listUrls
+     *            the rows of the list of URLs
+     * @param strCode
+     *            the code
+     * @return true if a row has this code
+     */
+    private static boolean isUrlCodeUsed( ReferenceList listUrls, String strCode )
+    {
+        return listUrls.stream( ).anyMatch( x -> strCode.equals( x.getCode( ) ) );
+    }
+
     /**
      * Populate roles.
      *
