@@ -584,6 +584,13 @@ public class RuleJspBean extends MVCAdminJspBean
             return getModifyRule( request, rule );
         }
 
+        // the form has no priority field: keep the stored priority
+        Rule ruleStored = RuleHome.findByPrimaryKey( rule.getId( ) );
+        if ( ruleStored != null )
+        {
+            rule.setPriorityOrder( ruleStored.getPriorityOrder( ) );
+        }
+
         RuleHome.update( rule );
         addInfo( INFO_RULE_UPDATED, getLocale(  ) );
 

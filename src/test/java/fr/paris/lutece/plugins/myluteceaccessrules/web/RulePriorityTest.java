@@ -114,4 +114,30 @@ public class RulePriorityTest extends LuteceTestCase
 
         assertEquals( Arrays.asList( "prio-B", "prio-A", "prio-C" ), order( listTitles ) );
     }
+
+    /**
+     * Modifying a rule keeps its priority.
+     *
+     * @throws Exception
+     *             if the controller fails
+     */
+    @Test
+    public void testModifyRuleKeepsPriority( ) throws Exception
+    {
+        List<String> listTitles = Arrays.asList( "mod-A", "mod-B" );
+        Rule ruleA = createRule( "mod-A" );
+        createRule( "mod-B" );
+        int nPriority = RuleHome.findByPrimaryKey( ruleA.getId( ) ).getPriorityOrder( );
+
+        MockHttpServletRequest request = adminRequest( "modifyRule", "modifyRule" );
+        request.addParameter( "id", String.valueOf( ruleA.getId( ) ) );
+        request.addParameter( "title", "mod-A" );
+        request.addParameter( "description", "changed" );
+        _instance.processController( request, new MockHttpServletResponse( ) );
+
+        Rule ruleSaved = RuleHome.findByPrimaryKey( ruleA.getId( ) );
+        assertEquals( "changed", ruleSaved.getDescription( ) );
+        assertEquals( nPriority, ruleSaved.getPriorityOrder( ) );
+        assertEquals( listTitles, order( listTitles ) );
+    }
 }
