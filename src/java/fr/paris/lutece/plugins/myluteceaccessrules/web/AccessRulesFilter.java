@@ -46,6 +46,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import fr.paris.lutece.plugins.mylutece.service.security.AuthenticationFilterService;
 import fr.paris.lutece.plugins.myluteceaccessrules.business.Rule;
@@ -101,7 +102,8 @@ public class AccessRulesFilter implements Filter
         	Rule rule=_accessRulesService.getFirstRuleTriggered(req);
         	//Logout User if the rule is not verified
         	SecurityService.getInstance().logoutUser(req);
-        	 int nbRedirect=!StringUtils.isEmpty(request.getParameter( AccessRulesService.PARAMETER_NB_REDIRECT)) ? Integer.parseInt(req.getParameter( AccessRulesService.PARAMETER_NB_REDIRECT)):0;      
+        	 // a counter that is not a number counts as 0
+        	int nbRedirect = NumberUtils.toInt( req.getParameter( AccessRulesService.PARAMETER_NB_REDIRECT ), 0 );      
         	      
         	boolean bRedirect = nbRedirect < AppPropertiesService.getPropertyInt(AccessRulesService.PROPERTY_MAX_REDIRECT, 10)  && rule.isExternal() && StringUtils.isNotEmpty(rule.getRedirecturl());
         	if ( bRedirect && !_accessRulesService.isValidRedirection( rule ) )
