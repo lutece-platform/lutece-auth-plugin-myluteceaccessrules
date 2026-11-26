@@ -85,4 +85,36 @@ public class AccessRulesRedirectUrlTest extends LuteceTestCase
         assertTrue( strBackUrl.contains( AccessRulesService.PARAMETER_NB_REDIRECT + "=2" ), strBackUrl );
         assertTrue( strBackUrl.contains( "page=counter" ), strBackUrl );
     }
+
+    /**
+     * A back URL starting with the base URL marker followed by a slash gives a single slash after the base URL.
+     */
+    @Test
+    public void testBaseUrlMarkerFollowedBySlash( )
+    {
+        Rule rule = new Rule( );
+        rule.setRedirecturl( REDIRECT_URL );
+        rule.setBackUrl( "$baseurl/jsp/site/Portal.jsp?page=myapp" );
+
+        String strBackUrl = getBackUrl( rule, new MockHttpServletRequest( ), 0 );
+
+        assertFalse( strBackUrl.contains( "//jsp" ), strBackUrl );
+        assertTrue( strBackUrl.endsWith( "/jsp/site/Portal.jsp?page=myapp" ), strBackUrl );
+    }
+
+    /**
+     * A back URL starting with the base URL marker without slash keeps working.
+     */
+    @Test
+    public void testBaseUrlMarkerWithoutSlash( )
+    {
+        Rule rule = new Rule( );
+        rule.setRedirecturl( REDIRECT_URL );
+        rule.setBackUrl( "$baseurljsp/site/Portal.jsp?page=myapp" );
+
+        String strBackUrl = getBackUrl( rule, new MockHttpServletRequest( ), 0 );
+
+        assertFalse( strBackUrl.contains( "//jsp" ), strBackUrl );
+        assertTrue( strBackUrl.endsWith( "/jsp/site/Portal.jsp?page=myapp" ), strBackUrl );
+    }
 }

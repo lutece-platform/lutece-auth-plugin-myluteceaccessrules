@@ -341,16 +341,21 @@ public class AccessRulesService
 
 			String strBaseUrl = AppPathService.getBaseUrl(request);
 
-			if (strBaseUrl.endsWith("/") && strBackUrl.startsWith("/")) {
-				strBackUrl = strBackUrl.substring(1);
+			// join the base URL and the path that follows the marker with exactly one slash
+			int nMarker = strBackUrl.indexOf( MARKER_BASE_URL );
+			String strBefore = strBackUrl.substring( 0, nMarker );
+			String strAfter = strBackUrl.substring( nMarker + MARKER_BASE_URL.length( ) );
 
+			if ( strBaseUrl.endsWith( "/" ) && strAfter.startsWith( "/" ) )
+			{
+				strAfter = strAfter.substring( 1 );
 			}
-			if (!strBaseUrl.endsWith("/") && !strBackUrl.startsWith("/")) {
-				strBackUrl = strBackUrl + "/";
-
+			else if ( !strBaseUrl.endsWith( "/" ) && !strAfter.isEmpty( ) && !strAfter.startsWith( "/" ) )
+			{
+				strAfter = "/" + strAfter;
 			}
 
-			strBackUrl = strBackUrl.replaceAll("\\" + MARKER_BASE_URL, strBaseUrl);
+			strBackUrl = strBefore + strBaseUrl + strAfter;
 		}
 		
 		if(!rule.isEncodeBackUrl())
