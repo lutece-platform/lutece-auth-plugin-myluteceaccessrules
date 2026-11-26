@@ -494,6 +494,7 @@ public class RuleJspBean extends MVCAdminJspBean
         int nId = Integer.parseInt( request.getParameter( PARAMETER_ID_RULE ) );
         UrlItem url = new UrlItem( getActionUrl( ACTION_REMOVE_RULE ) );
         url.addParameter( PARAMETER_ID_RULE, nId );
+        url.addParameter( SecurityTokenService.PARAMETER_TOKEN, getSecurityTokenService( ).getToken( request, ACTION_REMOVE_RULE ) );
 
         String strMessageUrl = AdminMessageService.getMessageUrl( request, MESSAGE_CONFIRM_REMOVE_RULE, url.getUrl(  ), AdminMessage.TYPE_CONFIRMATION );
 
@@ -505,10 +506,17 @@ public class RuleJspBean extends MVCAdminJspBean
      *
      * @param request The Http request
      * @return the jsp URL to display the form to manage rules
+     * @throws AccessDeniedException
+     *             if the security token is not valid
      */
     @Action( ACTION_REMOVE_RULE )
-    public String doRemoveRule( HttpServletRequest request )
+    public String doRemoveRule( HttpServletRequest request ) throws AccessDeniedException
     {
+        if ( !getSecurityTokenService( ).validate( request, ACTION_REMOVE_RULE ) )
+        {
+            throw new AccessDeniedException( "Invalid security token" );
+        }
+
         int nId = Integer.parseInt( request.getParameter( PARAMETER_ID_RULE ) );
         RuleHome.remove( nId );
         addInfo( INFO_RULE_REMOVED, getLocale(  ) );
