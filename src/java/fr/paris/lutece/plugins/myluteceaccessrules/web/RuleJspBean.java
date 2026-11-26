@@ -822,7 +822,17 @@ public class RuleJspBean extends MVCAdminJspBean
     {
 
         rule.setRoles(new ReferenceList());
-        RoleHome.getRolesList(getUser()).stream().filter(x->request.getParameter(PREFIX_PARAMETER_ROLE+x.getCode())!=null).forEach(x->rule.getRoles().addItem(x.getCode(), x.getCode()));
+        ReferenceList listRolesVisible = RoleHome.getRolesList( getUser( ) );
+        listRolesVisible.stream().filter(x->request.getParameter(PREFIX_PARAMETER_ROLE+x.getCode())!=null).forEach(x->rule.getRoles().addItem(x.getCode(), x.getCode()));
+
+        // the roles of the workgroups of the administrator are the only ones shown: keep the other roles of the rule
+        Rule ruleStored = ( rule.getId( ) > 0 ) ? RuleHome.findByPrimaryKey( rule.getId( ) ) : null;
+        if ( ruleStored != null && ruleStored.getRoles( ) != null )
+        {
+            ruleStored.getRoles( ).stream( )
+                    .filter( x -> listRolesVisible.stream( ).noneMatch( y -> y.getCode( ).equals( x.getName( ) ) ) )
+                    .forEach( x -> rule.getRoles( ).addItem( x.getName( ), x.getName( ) ) );
+        }
 
     }
 
