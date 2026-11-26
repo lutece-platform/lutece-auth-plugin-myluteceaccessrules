@@ -37,11 +37,14 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
+
 import fr.paris.lutece.plugins.myluteceaccessrules.service.AccessRulesService;
 import fr.paris.lutece.portal.service.datastore.DatastoreService;
 import fr.paris.lutece.portal.service.plugin.Plugin;
 import fr.paris.lutece.portal.service.plugin.PluginService;
 import fr.paris.lutece.portal.service.util.AppPathService;
+import fr.paris.lutece.util.ReferenceItem;
 import fr.paris.lutece.util.ReferenceList;
 import jakarta.enterprise.inject.spi.CDI;
 
@@ -184,8 +187,6 @@ public final class RuleHome
 	  * @param listRules the list rules
 	  */
 	 public static void updateRulesPriorities(List<Rule> listRules) {
- 	   //reset cache after updating rules priorities 
-         _accessRulesService.getCache().resetCache();
  		if (listRules != null) {
  			
  			List<Rule> listRulesSorted= listRules.stream().sorted(Comparator.comparingInt(Rule::getPriorityOrder).reversed())
@@ -195,50 +196,61 @@ public final class RuleHome
  			for (Rule rule : listRulesSorted) {
 
  				rule.setPriorityOrder(nPriority--);
- 				RuleHome.update(rule);
+ 				// only the priority changes: the URLs and roles of the rule are not rewritten, so that the front office never reads a
+ 				// rule without its URLs (a rule without protected URL applies to every URL)
+ 				_dao.store( rule, _plugin );
 
  			}
  		}
+ 	   //reset cache after updating rules priorities 
+         _accessRulesService.getCache().resetCache();
  	}
      
     
     
     private static void updateRuleUrls(Rule rule)
     {
-    	  int[] idx = { 0 };
-    	 DatastoreService.removeInstanceDataByPrefix(getRuleKeyPrefix(RULE_PROTECTED_URL_PREFIX, rule.getId()));
-         DatastoreService.removeInstanceDataByPrefix(getRuleKeyPrefix(RULE_PUBLIC_URL_PREFIX, rule.getId()));
-         
-         if( rule.getProtectedUrls()!=null )
-         {
-        	
-         	rule.getProtectedUrls().stream().forEach(x -> DatastoreService.setInstanceDataValue(getRuleKeyPrefix(RULE_PROTECTED_URL_PREFIX, rule.getId())+idx[0]++, x.getName()));
-         	
-         }
-         
-         if( rule.getPublicUrls()!=null )
-         {
-        	idx[0]=0; 
-         	rule.getPublicUrls().stream().forEach(x -> DatastoreService.setInstanceDataValue(getRuleKeyPrefix(RULE_PUBLIC_URL_PREFIX, rule.getId())+idx[0]++, x.getName()));
-         	
-         }
-           	
+        writeRuleData( RULE_PROTECTED_URL_PREFIX, rule.getId( ), rule.getProtectedUrls( ) );
+        writeRuleData( RULE_PUBLIC_URL_PREFIX, rule.getId( ), rule.getPublicUrls( ) );
     }
     
     private static void updateRuleRoles(Rule rule)
     {
-    	  int[] idx = { 0 };
-    	 DatastoreService.removeInstanceDataByPrefix(getRuleKeyPrefix(RULE_ROLES_PREFIX, rule.getId()));
-     
-         
-         if( rule.getRoles() !=null )
-         {
-        	
-         	rule.getRoles().stream().forEach(x -> DatastoreService.setInstanceDataValue(getRuleKeyPrefix(RULE_ROLES_PREFIX, rule.getId())+idx[0]++, x.getName()));
-         	
-         }
-         
-           	
+        writeRuleData( RULE_ROLES_PREFIX, rule.getId( ), rule.getRoles( ) );
+    }
+
+    /**
+     * Writes the values of a rule data type (URLs or roles): the values are written first, then the keys left over from a longer former list are
+     * removed. A concurrent reader of the rules therefore never sees the list emptied while it is rewritten.
+     *
+     * @param strPrefix
+     *            the prefix of the data type
+     * @param nIdRule
+     *            the rule id
+     * @param listValues
+     *            the values to store, null for none
+     */
+    private static void writeRuleData( String strPrefix, int nIdRule, ReferenceList listValues )
+    {
+        String strKeyPrefix = getRuleKeyPrefix( strPrefix, nIdRule );
+        int nCount = 0;
+        if ( listValues != null )
+        {
+            for ( ReferenceItem item : listValues )
+            {
+                DatastoreService.setInstanceDataValue( strKeyPrefix + nCount++, item.getName( ) );
+            }
+        }
+
+        String strInstanceKeyPrefix = getInstanceKeyPrefix( strKeyPrefix );
+        for ( ReferenceItem item : getRuleData( strPrefix, nIdRule ) )
+        {
+            String strIndex = item.getCode( ).substring( strInstanceKeyPrefix.length( ) );
+            if ( !StringUtils.isNumeric( strIndex ) || Integer.parseInt( strIndex ) >= nCount )
+            {
+                DatastoreService.removeInstanceData( strKeyPrefix + strIndex );
+            }
+        }
     }
 
     
@@ -274,6 +286,18 @@ public final class RuleHome
     }
 
     /**
+     * Returns the key prefix as stored by DatastoreService.setInstanceDataValue in the current webapp instance
+     *
+     * @param strKeyPrefix
+     *            the key prefix
+     * @return the stored key prefix
+     */
+    private static String getInstanceKeyPrefix( String strKeyPrefix )
+    {
+        return AppPathService.isDefaultWebappInstance( ) ? strKeyPrefix : AppPathService.getWebappInstance( ) + "." + strKeyPrefix;
+    }
+
+    /**
      * Returns the data of a rule in the current webapp instance whose key starts exactly with its key prefix
      * (the datastore lookup by prefix also matches other characters in place of the underscores)
      *
@@ -286,9 +310,7 @@ public final class RuleHome
     private static ReferenceList getRuleData( String strPrefix, int nIdRule )
     {
         String strKeyPrefix = getRuleKeyPrefix( strPrefix, nIdRule );
-        // same key as DatastoreService.setInstanceDataValue
-        String strInstanceKeyPrefix = AppPathService.isDefaultWebappInstance( ) ? strKeyPrefix
-                : AppPathService.getWebappInstance( ) + "." + strKeyPrefix;
+        String strInstanceKeyPrefix = getInstanceKeyPrefix( strKeyPrefix );
         ReferenceList list = new ReferenceList( );
         DatastoreService.getInstanceDataByPrefix( strKeyPrefix ).stream( ).filter( item -> item.getCode( ).startsWith( strInstanceKeyPrefix ) )
                 .forEach( list::add );
