@@ -393,9 +393,12 @@ public class AccessRulesService
 	            {
 	                String strParamName = enumParams.nextElement( );
 	
-	               
+	                // the redirect counter is added below with its new value
+	                if ( !PARAMETER_NB_REDIRECT.equals( strParamName ) )
+	                {
 	                    url.addParameter( strParamName, URLEncoder.encode( request.getParameter( strParamName ), "UTF-8" ) );
 	                }
+	            }
 	                url.addParameter(AccessRulesService.PARAMETER_NB_REDIRECT, nbRedirect+1);
 	            	strDefaultBackUrl=url.getUrl( ) ;
 	            	if(strDefaultBackUrl.startsWith("/"))
