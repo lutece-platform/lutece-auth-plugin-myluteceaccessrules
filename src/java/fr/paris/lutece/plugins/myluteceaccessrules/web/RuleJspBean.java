@@ -668,6 +668,8 @@ public class RuleJspBean extends MVCAdminJspBean
        		  	int nPriority=ruleNext.getPriorityOrder();
        		  	ruleNext.setPriorityOrder(rule.getPriorityOrder());
        		  	rule.setPriorityOrder(nPriority);
+       		  	// one step down: swap with the next rule only
+       		  	break;
         	 }
        	  }
         	
